@@ -1,6 +1,18 @@
-# 「 fastapi-project-basis 」
+# 「 fastapi-project-framework 」
 
-> 帮助您快速构建 fastapi 项目.
+<div align="right">
+    <a href="https://fastapi.tiangolo.com/zh/">fastapi 官方网站 ➡</a>
+</div>
+
+> 💡 **帮助您快速构建 fastapi 项目.**
+
++ ***[快速启用](#-快速启用)***
+
++ ***[项目结构](#-项目结构)***
+
+<div align="center">
+    <img src="https://github.com/fmw666/my-image-file/blob/master/images/cute/small-cute-8.jpg" width=100>
+</div>
 
 <br>
 
@@ -28,22 +40,19 @@ server> .\venv\Scripts\activate  # 启动虚拟环境
 ```js
 server
 ├── core/
-│   ├── .env  # 这是您需要创建的文件
+│   ├── .env  # 这是您需要创建的文件. 注意，文件包含后缀，完整命名即为 .env
 ```
 
-> 注意，文件包含后缀，完整命名即为 .env
+正确创建完文件后，我们需要您写入至少如下内容：
 
-正确创建完文件后，我们需要您写入至少如下内容（它们是以键值对形式存在，并且都为字符串类型，不需要引号）：
+> 第一行为 **数据库连接信息**，第二行为 **密钥信息**（它们是以键值对形式存在，并且都为字符串类型，不需要引号）
 
 ```s
 DB_CONNECTION=mysql+pymysql://username:password@127.0.0.1:3306/dbname
 SECRET_KEY=OauIrgmfnwCdxMBWpzPF7vfNzga1JVoiJi0hqz3fzkY
 ```
 
-很显然，第一行为数据库连接信息，请正确输入您 mysql 服务用户名、密码、主机地址、端口号、数据库名等内容
-第二行为密钥，您应该通过正确的方式为自己产品生成一串密钥，并填入其中
-
-*（当您开始尝试阅读 server/core/config.py 文件后，您可以开始编写更多相关配置）*
+*（当您开始尝试阅读 [server/core/config.py](#no-reply) 文件后，您可以开始编写更多相关配置）*
 
 + config.py 文件已经基本满足项目所需的所有配置信息，但是对于迁移工具 alembic 我们还需要单独为其写入配置
     
