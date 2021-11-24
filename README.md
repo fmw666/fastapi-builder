@@ -31,7 +31,7 @@ app> .\venv\Scripts\activate  # 启动虚拟环境
 (venv) ...\app> pip install -r requirements.txt  # 安装必要模块
 ```
 
-#### 2、修改项目配置
+**2. 修改项目配置**
 
 想要运行本项目，配置信息应该是您首先要关注的。
 
@@ -64,17 +64,16 @@ app> .\venv\Scripts\activate  # 启动虚拟环境
     sqlalchemy.url = mysql+pymysql://root:admin@localhost/dbname
     ```
 
-#### 3、启用数据库
+**3. 启用数据库**
 
-最后，您需要在环境中正确启动 mysql 服务，创建一个数据库，并执行迁移文件完成数据库中表的建立
-
+最后，您需要在环境中正确启动 mysql 服务，创建一个数据库，并执行迁移文件完成数据库中表的建立.<br>
 幸运的是，这一点我们已经尽可能地为您考虑。您只需要正确启动 mysql 服务，并在 [app/utils/](#no-reply) 中执行：
 
 ```sh
 app\utils> python dbmanager.py
 ```
 
-#### 4、运行项目
+**4. 运行项目**
 
 ```sh
 app> python main.py
