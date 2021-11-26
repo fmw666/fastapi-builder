@@ -35,5 +35,5 @@ class License(BaseEnum):
 
 
 class Database(BaseEnum):
-    POSTGRES = "Postgres"
+    # POSTGRES = "Postgres"
     MYSQL = "MySQL"
