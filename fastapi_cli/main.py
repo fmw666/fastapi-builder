@@ -9,12 +9,12 @@ from questionary.form import form
 from constants import Database, License, PackageManager, PythonVersion
 from context import AppContext, ProjectContext
 from generator import generate_app, generate_project
-from helpers import binary_question, question
+from helpers import binary_question, question, text_question
 
 app = typer.Typer(
     add_completion=False,
-    help="Managing FastAPI projects made easy!",
-    name="Manage FastAPI",
+    help="FastAPI-CLI make projects easy!",
+    name="FastAPI-CLI",
 )
 
 
@@ -23,6 +23,7 @@ def startproject(
     name: str,
     interactive: bool = typer.Option(False, help="Run in interactive mode."),
     database: Optional[Database] = typer.Option(None, case_sensitive=False),
+    database_name: Optional[str] = typer.Option(None, "--dbname"),
     docker: bool = typer.Option(False),
     license_: Optional[License] = typer.Option(None, "--license", case_sensitive=False),
     packaging: PackageManager = typer.Option(PackageManager.PIP),
@@ -37,9 +38,11 @@ def startproject(
             pre_commit=binary_question("pre commit"),
             docker=binary_question("docker"),
             database=question(Database),
+            database_name=text_question(name),
         ).ask()
         context = ProjectContext(name=name, **result)
     else:
+        database_name = database_name if database_name else name
         context = ProjectContext(
             name=name,
             packaging=packaging,
@@ -48,8 +51,8 @@ def startproject(
             pre_commit=pre_commit,
             docker=docker,
             database=database,
+            database_name=database_name
         )
-    print(context)
     generate_project(context)
 
 
@@ -70,8 +73,8 @@ def run(prod: bool = typer.Option(False)):
 
 def version_callback(value: bool):
     if value:
-        version = pkg_resources.get_distribution("manage-fastapi").version
-        typer.echo(f"manage-fastapi, version {version}")
+        version = pkg_resources.get_distribution("fastapi-cli").version
+        typer.echo(f"fastapi-cli, version {version}")
         raise typer.Exit()
 
 
@@ -82,7 +85,7 @@ def main(
         "--version",
         callback=version_callback,
         is_eager=True,
-        help="Show the Manage FastAPI version information.",
+        help="Show the FastAPI-CLI version information.",
     )
 ):
     ...

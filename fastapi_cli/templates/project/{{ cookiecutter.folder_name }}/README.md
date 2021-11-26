@@ -1,4 +1,4 @@
-# 「 fastapi-project-framework 」
+# 「 {{ cookiecutter.name }} 」
 
 <div align="right">
     <a href="https://fastapi.tiangolo.com/zh/">fastapi 官方网站 ➡</a>
@@ -145,3 +145,8 @@ app
 
 swigger docs
 
+<br>
+
+## License
+
+This project is licensed under the terms of the {{ cookiecutter.license }} license.

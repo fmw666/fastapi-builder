@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from . import authentication, user
+from . import authentication
+import app_user
 
 
 router = APIRouter()
 router.include_router(authentication.router, tags=["用户认证"], prefix="/auth")
-router.include_router(user.router, tags=["用户类"], prefix="/users")
+router.include_router(app_user.api.router, tags=["用户类"], prefix="/users")

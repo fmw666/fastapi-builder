@@ -13,8 +13,6 @@ ContextType = TypeVar("ContextType", bound=BaseModel)
 
 
 def fill_template(template_name: str, context: ContextType):
-    print('\n\n\n\n\n\n\n\nFMW  ')
-    print(os.path.join(TEMPLATES_DIR, template_name))
     try:
         cookiecutter(
             os.path.join(TEMPLATES_DIR, template_name),
@@ -22,8 +20,6 @@ def fill_template(template_name: str, context: ContextType):
             no_input=True,
         )
     except OutputDirExistsException:
-        typer.echo(f"Folder '{context.folder_name}' already exists. 😞")
-    except Exception:
         typer.echo(f"Folder '{context.folder_name}' already exists. 😞")
     else:
         typer.echo(f"FastAPI {template_name} created successfully! 🎉")

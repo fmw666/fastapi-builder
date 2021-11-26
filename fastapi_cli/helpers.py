@@ -17,3 +17,7 @@ def question(choices: EnumType) -> questionary.Question:
 
 def binary_question(option: str) -> questionary.Question:
     return questionary.confirm(f"Do you want {option}?", default=False)
+
+
+def text_question(default: str) -> questionary.Question:
+    return questionary.text(f"The name of the database you want to create? ", default=default)

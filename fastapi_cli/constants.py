@@ -17,7 +17,7 @@ class BaseEnum(str, Enum, metaclass=BaseMetadataEnum):
 
 class PackageManager(BaseEnum):
     PIP = "pip"
-    POETRY = "poetry"
+    # POETRY = "poetry"
 
 
 class PythonVersion(BaseEnum):

@@ -38,6 +38,7 @@ class ProjectContext(BaseModel):
     docker: bool
 
     database: Optional[Database]
+    database_name: Optional[str]
 
     @root_validator(pre=True)
     def validate_project(cls, values: dict):
