@@ -13,6 +13,14 @@ def remove_paths(paths: list):
                 os.unlink(path)
 
 
+def set_packaging():
+    packaging = "{{ cookiecutter.packaging }}"
+    if packaging == "pip":
+        remove_paths(["poetry.lock", "pyproject.toml"])
+    elif packaging == "poetry":
+        remove_paths(["requirements.txt"])
+
+
 def set_pre_commit():
     pre_commit: bool = eval("{{ cookiecutter.pre_commit }}")
     if pre_commit is False:
@@ -25,12 +33,6 @@ def set_docker():
         remove_paths(["Dockerfile", "docker-compose.yaml"])
 
 
-def set_database():
-    database = "{{ cookiecutter.database }}"
-    if database == "None":
-        remove_paths(["app/database.py"])
-
-
 def set_license():
     license_ = "{{ cookiecutter.license }}"
     if license_ == "None":
@@ -38,10 +40,10 @@ def set_license():
 
 
 def main():
-    set_database()
     set_docker()
     set_license()
     set_pre_commit()
+    set_packaging()
 
 
 if __name__ == "__main__":
