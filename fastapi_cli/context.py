@@ -4,6 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, root_validator
 
+from helpers import snake_to_camel, camel_to_pascal
 from config import FASTAPI_VERSION
 from constants import Database, License, PackageManager, PythonVersion
 
@@ -12,11 +13,15 @@ class AppContext(BaseModel):
     name: str
     folder_name: str
     snake_name: str
+    camel_name: str
+    pascal_name: str
 
     @root_validator(pre=True)
     def validate_app(cls, values: dict):
         values["folder_name"] = values["name"].lower().replace(" ", "-").strip()
         values["snake_name"] = values["folder_name"].replace("-", "_")
+        values["camel_name"] = snake_to_camel(values["snake_name"])
+        values["pascal_name"] = camel_to_pascal(values["camel_name"])
         return values
 
 
