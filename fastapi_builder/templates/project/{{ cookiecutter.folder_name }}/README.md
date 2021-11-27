@@ -1,7 +1,7 @@
 # 「 {{ cookiecutter.name }} 」
 
 <div align="right">
-    <a href="https://fastapi.tiangolo.com/zh/">fastapi 官方网站 ➡</a>
+    <a href="https://github.com/fmw666/fastapi-builder/">fastapi-builder 项目网址 ➡</a>
 </div>
 
 > 💡 **帮助您快速构建 fastapi 项目.**
