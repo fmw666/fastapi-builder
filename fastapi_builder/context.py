@@ -4,9 +4,9 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, root_validator
 
-from helpers import snake_to_camel, camel_to_pascal
-from config import FASTAPI_VERSION
-from constants import Database, License, PackageManager, PythonVersion
+from fastapi_builder.helpers import snake_to_camel, camel_to_pascal
+from fastapi_builder.config import FASTAPI_VERSION
+from fastapi_builder.constants import Database, License, PackageManager, PythonVersion
 
 
 class AppContext(BaseModel):

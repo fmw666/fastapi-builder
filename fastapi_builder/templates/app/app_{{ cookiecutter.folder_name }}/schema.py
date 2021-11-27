@@ -9,7 +9,7 @@ class {{ cookiecutter.pascal_name }}Base(BaseSchema):
     ...
 
 
-class U{{ cookiecutter.pascal_name }}Create({{ cookiecutter.pascal_name }}Base):
+class {{ cookiecutter.pascal_name }}Create({{ cookiecutter.pascal_name }}Base):
     """{{ cookiecutter.snake_name }} 创建"""
     ...
     

@@ -22,17 +22,58 @@
 
 from setuptools import setup, find_packages
 
+
+# 解析 readme.md 文件
+with open("README.md", "r", encoding="utf-8") as fp:
+    long_description = fp.read()
+
+# 解析 requirements.txt 文件
+with open("requirements.txt", "r", encoding="utf-8") as fp:
+    install_requires = fp.read().split("\n")
+
+
 setup(
-    name="fastapi-cli",
-    version="1.0.0",
-    packages=find_packages(where=".", exclude=(), include=("*",)),
-    package_data={"": ["*.*"]},
-    exclude_package_data={"": ["*.pyc"]},
+    name="fastapi-builder",
+    version="1.0.1",
     author="fmw666",
     author_email="fmw19990718@qq.com",
-    url="https://github.com/fmw666/fastapi-cli",
+    description="fastapi-builder Project generator and manager for FastAPI",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    keywords=["fastapi", "builder"],
+    # 项目主页
+    url="https://github.com/fmw666/fastapi-builder",
+    # 需要被打包的内容
+    packages=find_packages(where=".", exclude=(), include=("*",)),
+    include_package_data=True,
+    package_data={"": ["*.*"]},
+    exclude_package_data={"": ["*.pyc"]},
+    # 许可证
     license="https://mit-license.org/",
-    description="fastapi-cli Project generator and manager for FastAPI",
-    keywords=["fastapi", ],
-    
+    # 项目依赖
+    install_requires=install_requires,
+    # 支持自动生成脚本
+    entry_points={
+        "console_scripts": [
+            "fastapi=fastapi_builder.__main__:main"
+        ]
+    },
+    classifiers=[
+        # 3-Alpha  4-Beta  5-Production/Stable
+        "Development Status :: 3 - Alpha",
+        # 目标用户: 开发者
+        "Intended Audience :: Developers",
+        # 类型: 软件
+        "Topic :: Software Development :: Build Tools",
+        # 许可证信息
+        "License :: OSI Approved :: MIT License",
+        # 目标 Python 版本
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        # 操作系统
+        "Operating System :: OS Independent"
+    ]
 )

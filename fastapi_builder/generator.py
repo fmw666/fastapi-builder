@@ -6,8 +6,8 @@ from cookiecutter.exceptions import OutputDirExistsException
 from cookiecutter.main import cookiecutter
 from pydantic.main import BaseModel
 
-from config import TEMPLATES_DIR
-from context import AppContext, ProjectContext
+from fastapi_builder.config import TEMPLATES_DIR
+from fastapi_builder.context import AppContext, ProjectContext
 
 ContextType = TypeVar("ContextType", bound=BaseModel)
 

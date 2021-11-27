@@ -6,15 +6,15 @@ import pkg_resources
 import typer
 from questionary.form import form
 
-from constants import Database, License, PackageManager, PythonVersion
-from context import AppContext, ProjectContext
-from generator import generate_app, generate_project
-from helpers import binary_question, question, text_question
+from fastapi_builder.constants import Database, License, PackageManager, PythonVersion
+from fastapi_builder.context import AppContext, ProjectContext
+from fastapi_builder.generator import generate_app, generate_project
+from fastapi_builder.helpers import binary_question, question, text_question
 
 app = typer.Typer(
     add_completion=False,
-    help="FastAPI-CLI make projects easy!",
-    name="FastAPI-CLI",
+    help="FastAPI-Builder make fastapi projects easy!",
+    name="FastAPI-Builder",
 )
 
 
@@ -73,8 +73,8 @@ def run(prod: bool = typer.Option(False)):
 
 def version_callback(value: bool):
     if value:
-        version = pkg_resources.get_distribution("fastapi-cli").version
-        typer.echo(f"fastapi-cli, version {version}")
+        version = pkg_resources.get_distribution("fastapi-builder").version
+        typer.echo(f"fastapi-builder, version {version}")
         raise typer.Exit()
 
 
@@ -85,7 +85,7 @@ def main(
         "--version",
         callback=version_callback,
         is_eager=True,
-        help="Show the FastAPI-CLI version information.",
+        help="Show the FastAPI-Builder version information.",
     )
 ):
     ...
