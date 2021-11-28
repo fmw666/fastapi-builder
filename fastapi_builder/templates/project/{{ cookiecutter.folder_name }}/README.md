@@ -1,7 +1,7 @@
 # 「 {{ cookiecutter.name }} 」
 
 <div align="right">
-    <a href="https://github.com/fmw666/fastapi-builder/">fastapi-builder 项目网址 ➡</a>
+    <a href="https://github.com/fmw666/fastapi-builder/"><b>fastapi-builder 项目网址 ➡</b></a>
 </div>
 
 <br>
