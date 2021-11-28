@@ -1,7 +1,7 @@
 # 「 FastAPI Builder 」
 
 <div align="right">
-    <a href="https://fastapi.tiangolo.com/zh/">fastapi 官方网站 ➡</a>
+    <a href="https://fastapi.tiangolo.com/zh/"><b>fastapi 官方网站 ➡</b></a>
 </div>
 
 <br>
