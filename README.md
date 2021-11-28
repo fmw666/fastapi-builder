@@ -40,19 +40,25 @@
 
 ## 🎯 TODO
 
+<div align="right"><i><b>期待您对本项目做出贡献。</b></i></div>
+
 + [ ] 完善项目框架代码部分
 
 + [ ] 完善项目框架文档部分
 
 + [ ] 提供英文版本
 
-+ [ ] 提供项目数据库 Postgres 选项
++ [ ] 提供项目数据库 PostgreSQL 选项
+
++ [ ] 提供完整的 run 方法
+
++ [ ] 内置 alembic 数据迁移等管理
 
 <br>
 
 ## 🚀 快速开始
 
-> 依赖：Python 3.6+
+<div align="right"><i><b>依赖：Python 3.6+</b></i></div>
 
 安装 `fastapi-builder` 项目：
 
