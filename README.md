@@ -40,7 +40,7 @@
 
 ## 🎯 TODO
 
-<div align="right"><i><b>期待您对本项目做出贡献。</b></i></div>
+<div align="right"><i>期待您对本项目做出贡献。</i></div>
 
 + [ ] 完善项目框架代码部分
 
