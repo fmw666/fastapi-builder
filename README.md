@@ -59,9 +59,9 @@
 ## 🚀 快速开始
 
 <div align="right">
-<i><b>依赖：Python 3.6+</b></i>
-<br><br>
-<i>详细教程见：<b><a href="docs/tutorial.md">tutorial</a></b></i>
+<i>=> 依赖：<b>Python 3.6+</b></i>
+<br>
+<i>=> 详细教程：<b><a href="docs/tutorial.md">tutorial</a></b></i>
 </div>
 
 安装 `fastapi-builder` 项目：
