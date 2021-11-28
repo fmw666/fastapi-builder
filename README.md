@@ -40,6 +40,10 @@
 
 ## 🎯 TODO
 
++ [ ] 完善项目框架代码部分
+
++ [ ] 完善项目框架文档部分
+
 + [ ] 提供英文版本
 
 + [ ] 提供项目数据库 Postgres 选项
@@ -50,7 +54,7 @@
 
 > 依赖：Python 3.6+
 
-安装 fastapi-builder 项目：
+安装 `fastapi-builder` 项目：
 
 ```sh
 pip install fastapi-builder
@@ -69,7 +73,7 @@ fastapi --help
 fastapi startproject --help
 ```
 
-创建 fastapi 项目：
+创建 `fastapi` 项目：
 
 ```sh
 fastapi startproject [name]
@@ -79,13 +83,13 @@ fastapi startproject [name]
 fastapi startproject [name] --interactive
 ```
 
-创建 fastapi 应用：
+创建 `fastapi` 应用：
 
 ```sh
 fastapi startapp [name]
 ```
 
-运行 fastapi 项目：
+运行 `fastapi` 项目：
 
 ```sh
 fastapi run
