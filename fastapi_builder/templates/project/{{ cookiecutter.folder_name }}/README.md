@@ -67,50 +67,47 @@ project> python main.py
 ## 📌 项目结构
 
 ```js
-app
-├── alembic/
+project
+├── alembic/                      - 数据库迁移工具
 │   ├── versions/
 │   ├── env.py
 │   ├── README
-│   └── script.py.mako
-├── api/               - web related stuff.
-│   └── errors/        - definition of error handlers.
+│   ├── script.py.mako
+├── api/                          - web 相关（路由、认证、请求、响应）.
+│   ├── errors/                   - 定义错误处理方法.
 │   │   ├── http_error.py
-│   │   └── validation_error.py
-│   └── routes/        - web routes.
-│       ├── api.py
-│       ├── authentication.py
-│       └── user.py
-├── core/              - application configuration, startup events, logging.
-│   ├── .env    - manually written alembic migrations.
-│   ├── config.py    - manually written alembic migrations.
-│   ├── events.py    - manually written alembic migrations.
-│   ├── logger.py    - manually written alembic migrations.
-├── db/                - db related stuff.
-│   ├── base.py    - manually written alembic migrations.
-│   └── database.py  - all crud stuff.
-│   ├── errors.py    - manually written alembic migrations.
-│   ├── events.py    - manually written alembic migrations.
-├── lib/               - db related stuff.
-│   ├── jwt.py    - manually written alembic migrations.
-│   ├── security.py    - manually written alembic migrations.
-├── logs/               - db related stuff.
-├── middleware/            - pydantic models for this application.
-│   ├── logger.py    - manually written alembic migrations.
-├── models/            - pydantic models for this application.
-│   ├── base.py        - main models that are used almost everywhere.
-│   └── mixins.py       - schemas for using in web routes.
-│   ├── user.py        - main models that are used almost everywhere.
-├── schemas/            - pydantic models for this application.
-│   ├── auth.py        - main models that are used almost everywhere.
-│   └── base.py       - schemas for using in web routes.
-│   ├── jwt.py        - main models that are used almost everywhere.
-│   ├── user.py        - main models that are used almost everywhere.
-├── utils/             - strings that are used in web responses.
-├── ├── consts.py      - logic that is not just crud related.
-├── ├── dbmanager.py      - logic that is not just crud related.
-├── ├── docs.py      - logic that is not just crud related.
-└── main.py            - FastAPI application creation and configuration.
+│   │   │── validation_error.py   -
+│   ├── routes/                   - web routes.
+│   │   ├── api.py
+│   │   │── authentication.py     - 认证相关（登录、注册）
+├── core/                         - application configuration, startup events, logging.
+│   ├── .env                      - manually written alembic migrations.
+│   ├── config.py                 - manually written alembic migrations.
+│   ├── events.py                 - manually written alembic migrations.
+│   ├── logger.py                 - manually written alembic migrations.
+├── db/                           - db related stuff.
+│   ├── base.py                   - manually written alembic migrations.
+│   └── database.py               - all crud stuff.
+│   ├── errors.py                 - manually written alembic migrations.
+│   ├── events.py                 - manually written alembic migrations.
+├── lib/                          - db related stuff.
+│   ├── jwt.py                    - manually written alembic migrations.
+│   ├── security.py               - manually written alembic migrations.
+├── logs/                         - db related stuff.
+├── middleware/                   - pydantic models for this application.
+│   ├── logger.py                 - manually written alembic migrations.
+├── models/                       - pydantic models for this application.
+│   ├── base.py                   - main models that are used almost everywhere.
+│   └── mixins.py                 - schemas for using in web routes.
+├── schemas/                      - pydantic models for this application.
+│   ├── auth.py                   - main models that are used almost everywhere.
+│   └── base.py                   - schemas for using in web routes.
+│   ├── jwt.py                    - main models that are used almost everywhere.
+├── utils/                        - strings that are used in web responses.
+├── ├── consts.py                 - logic that is not just crud related.
+├── ├── dbmanager.py              - logic that is not just crud related.
+├── ├── docs.py                   - logic that is not just crud related.
+└── main.py                       - FastAPI application creation and configuration.
 ```
 
 <br>
