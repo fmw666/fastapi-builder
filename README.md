@@ -40,7 +40,7 @@
 
 ## 🎯 TODO
 
-<div align="right"><i><b><a href="#no-reply">期待您对本项目做出贡献...</a></b></i></div>
+<div align="right"><i><b><a href="#no-reply">PS: 期待您对本项目做出贡献...</a></b></i></div>
 
 + [ ] 完善项目框架代码部分
 
@@ -60,6 +60,7 @@
 
 <div align="right">
 <i><b>依赖：Python 3.6+</b></i>
+<br>
 <i><b>详细教程见：<a href="docs/tutorial.md">tutorial</a></b></i>
 </div>
 
