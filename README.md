@@ -4,9 +4,11 @@
     <a href="https://fastapi.tiangolo.com/zh/">fastapi 官方网站 ➡</a>
 </div>
 
+<br>
+
 > 💡 **fastapi 项目构建器. 一款帮助你快速构建 fastapi 项目的工具.**
 
-+ ***[特性](#-项目特性)***
++ ***[特性](#-特性)***
 
 + ***[TODO](#-todo)***
 
@@ -22,7 +24,7 @@
 
 <br>
 
-## 🏹 特性
+## 💬 特性
 
 + 创建可自定义的 project 项目.
 
