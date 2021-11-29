@@ -1,6 +1,7 @@
 import os
 
 
+# 删除指定文件或目录
 def remove_paths(paths: list):
     base_dir = os.getcwd()
 
@@ -12,7 +13,11 @@ def remove_paths(paths: list):
             else:
                 os.unlink(path)
 
+# 删除多余的文件
+def del_redundant_file():
+    remove_paths(["__init__.py"])
 
+# 打包工具选择
 def set_packaging():
     packaging = "{{ cookiecutter.packaging }}"
     if packaging == "pip":
@@ -20,19 +25,19 @@ def set_packaging():
     elif packaging == "poetry":
         remove_paths(["requirements.txt"])
 
-
+# pre_commit 选择
 def set_pre_commit():
     pre_commit: bool = eval("{{ cookiecutter.pre_commit }}")
     if pre_commit is False:
         remove_paths([".pre-commit-config.yaml", "setup.cfg"])
 
-
+# docker 选择
 def set_docker():
     docker: bool = eval("{{ cookiecutter.docker }}")
     if docker is False:
         remove_paths(["Dockerfile", "docker-compose.yaml"])
 
-
+# 许可证选择
 def set_license():
     license_ = "{{ cookiecutter.license }}"
     if license_ == "None":
@@ -40,6 +45,7 @@ def set_license():
 
 
 def main():
+    del_redundant_file()
     set_docker()
     set_license()
     set_pre_commit()
