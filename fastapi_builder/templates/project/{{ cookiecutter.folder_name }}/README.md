@@ -114,7 +114,7 @@ project
 
 ## 💬 功能示例
 
-swigger docs
+Swagger docs
 
 <br>
 
