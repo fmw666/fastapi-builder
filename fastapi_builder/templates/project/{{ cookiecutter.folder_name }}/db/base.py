@@ -2,4 +2,4 @@
 from models.base import Base
 
 # 导入 models
-from models.user import User
+from app_user.model import *
