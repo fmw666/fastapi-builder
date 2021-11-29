@@ -63,7 +63,7 @@
 <div align="right">
 <i>=> 依赖：<b>Python 3.6+</b></i>
 <br>
-<i>=> 详细教程：<b><a href="docs/tutorial.md">tutorial</a></b>&emsp;</i>
+<i>=> 详细教程：<b><a href="docs/tutorial.md">tutorial</a></b></i>
 </div>
 <br>
 
