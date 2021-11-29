@@ -75,39 +75,64 @@ project
 │   ├── script.py.mako
 ├── api/                          - web 相关（路由、认证、请求、响应）.
 │   ├── errors/                   - 定义错误处理方法.
-│   │   ├── http_error.py
-│   │   │── validation_error.py   -
-│   ├── routes/                   - web routes.
-│   │   ├── api.py
-│   │   │── authentication.py     - 认证相关（登录、注册）
-├── core/                         - application configuration, startup events, logging.
-│   ├── .env                      - manually written alembic migrations.
-│   ├── config.py                 - manually written alembic migrations.
-│   ├── events.py                 - manually written alembic migrations.
-│   ├── logger.py                 - manually written alembic migrations.
-├── db/                           - db related stuff.
-│   ├── base.py                   - manually written alembic migrations.
-│   └── database.py               - all crud stuff.
-│   ├── errors.py                 - manually written alembic migrations.
-│   ├── events.py                 - manually written alembic migrations.
-├── lib/                          - db related stuff.
-│   ├── jwt.py                    - manually written alembic migrations.
-│   ├── security.py               - manually written alembic migrations.
-├── logs/                         - db related stuff.
-├── middleware/                   - pydantic models for this application.
-│   ├── logger.py                 - manually written alembic migrations.
-├── models/                       - pydantic models for this application.
-│   ├── base.py                   - main models that are used almost everywhere.
-│   └── mixins.py                 - schemas for using in web routes.
-├── schemas/                      - pydantic models for this application.
-│   ├── auth.py                   - main models that are used almost everywhere.
-│   └── base.py                   - schemas for using in web routes.
-│   ├── jwt.py                    - main models that are used almost everywhere.
-├── utils/                        - strings that are used in web responses.
-├── ├── consts.py                 - logic that is not just crud related.
-├── ├── dbmanager.py              - logic that is not just crud related.
-├── ├── docs.py                   - logic that is not just crud related.
-└── main.py                       - FastAPI application creation and configuration.
+│   │   ├── http_error.py         - http 错误处理方法
+│   │   │── validation_error.py   - 验证错误处理方法
+│   ├── routes/                   - web routes 路由.
+│   │   ├── api.py                - 总路由接口
+│   │   └── authentication.py     - 认证相关（登录、注册）路由
+├── app_user/                     - user 应用.
+│   ├── api.py                    - 提供 user 接口方法
+│   ├── model.py                  - 提供 user 表模型
+│   ├── schema.py                 - 提供 user 结构模型
+├── core/                         - 项目核心配置, 如: 配置文件, 事件句柄, 日志.
+│   ├── .env                      - 配置文件.
+│   ├── config.py                 - 解析配置文件, 用于其他文件读取配置.
+│   ├── events.py                 - 定义 fastapi 事件句柄.
+│   ├── logger.py                 - 定义项目日志方法.
+├── db/                           - 数据库相关.
+│   ├── base.py                   - 导入所有应用 model.
+│   └── database.py               - sqlalchemy 方法应用.
+│   ├── errors.py                 - 数据库相关错误异常.
+│   ├── events.py                 - 数据库相关事件句柄.
+├── lib/                          - 自定义库
+│   ├── jwt.py                    - 用户认证 jwt 方法.
+│   ├── security.py               - 加密相关方法.
+├── logs/                         - 日志文件目录.
+├── middleware/                   - 项目中间件.
+│   ├── logger.py                 - 请求日志处理.
+├── models/                       - sqlalchemy 基础模型相关
+│   ├── base.py                   - sqlalchemy declarative Base 表模型.
+│   └── mixins.py                 - mixin 抽象模型定义.
+├── schemas/                      - pydantic 结构模型相关.
+│   ├── auth.py                   - 用户认证相关结构模型.
+│   └── base.py                   - pydantic 结构模型基础类.
+│   ├── jwt.py                    - jwt 相关结构模型.
+├── utils/                        - 工具类.
+│   ├── consts.py                 - 项目常量定义.
+│   ├── dbmanager.py              - 数据库管理服务.
+│   ├── docs.py                   - fastapi docs 文档自定义.
+{% if cookiecutter.pre_commit == "True" -%}
+├── .pre-commit-config.yaml       - pre-commit 配置文件.
+{%- endif %}
+├── alembic.ini                   - alembic 数据库迁移工具配置文件.
+{% if cookiecutter.docker == "True" -%}
+├── docker-compose.yaml           - docker 配置.
+├── Dockerfile                    - dockfile 文件.
+{%- endif -%}
+{% if cookiecutter.license -%}
+├── LICENSE                       - 许可证信息.
+{%- endif %}
+├── main.py                       - fastapi application 创建和配置.
+{% if cookiecutter.packaging == "poetry" -%}
+├── pyproject.toml                - poetry 需求模块信息.
+{%- endif %}
+├── README.md                     - 项目说明文档.
+{% if cookiecutter.packaging == "pip" -%}
+├── requirements.txt              - pip 需求模块信息.
+{%- endif %}
+{%- if cookiecutter.pre_commit == "True" -%}
+├── setup.cfg                     - pre-commit 配置文件.
+{%- endif %}
 ```
 
 <br>
