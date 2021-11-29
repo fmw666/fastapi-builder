@@ -5,8 +5,8 @@ from starlette.status import HTTP_400_BAD_REQUEST
 
 from db.errors import EntityDoesNotExist
 from db.database import get_db
-from schemas.user import UserCreate
-from models.user import User
+from app_user.schema import UserCreate
+from app_user.model import User
 
 from utils import consts
 from lib.jwt import create_access_token, get_current_user
