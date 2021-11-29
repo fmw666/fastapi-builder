@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, HttpUrl
 
-from models.user import User
+from app_user.model import User
 from schemas.base import Schema
 
 
