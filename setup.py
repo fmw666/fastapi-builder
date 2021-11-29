@@ -77,3 +77,7 @@ setup(
         "Operating System :: OS Independent"
     ]
 )
+
+# how to upload to pypi?
+# 1. python .\setup.py sdist bdist_wheel
+# 2. twine upload dist/*
