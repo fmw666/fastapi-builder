@@ -42,9 +42,11 @@
 
 <div align="right"><i><b><a href="#no-reply">PS: 期待您对本项目做出贡献...</a></b></i></div>
 
-+ [ ] 完善项目框架代码部分
++ [ ] 持续完善项目框架代码部分
 
-+ [ ] 完善项目框架文档部分
++ [ ] 持续完善项目框架文档部分
+
++ [ ] 优化 requirements.txt
 
 + [ ] 提供英文版本
 
@@ -61,8 +63,9 @@
 <div align="right">
 <i>=> 依赖：<b>Python 3.6+</b></i>
 <br>
-<i>=> 详细教程：<b><a href="docs/tutorial.md">tutorial</a></b></i>
+<i>=> 详细教程：<b><a href="docs/tutorial.md">tutorial</a></b>&ensp;</i>
 </div>
+<br>
 
 安装 `fastapi-builder` 项目：
 
