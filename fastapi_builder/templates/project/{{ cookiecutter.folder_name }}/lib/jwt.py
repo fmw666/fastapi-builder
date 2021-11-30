@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm.session import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from models.user import User
+from app_user.model import User
 
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, JWT_ALGORITHM
 from db.database import get_db
