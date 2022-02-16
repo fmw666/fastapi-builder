@@ -23,7 +23,7 @@ __pycache__/
 *.log
 
 # tmp file
-tmp
+tmp*
 
 # Distribution / packaging
 .Python
