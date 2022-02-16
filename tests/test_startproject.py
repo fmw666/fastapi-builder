@@ -2,12 +2,14 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from fastapi_cli.main import app
+from fastapi_builder.main import app
+from utils import rm_tmp_dir
+
 
 runner = CliRunner()
 
-CREATED_SUCCESSFULLY = "FastAPI project created successfully! 🎉\n"
-ALREADY_EXISTS = "Folder 'demo' already exists. 😞\n"
+CREATED_SUCCESSFULLY = "\nFastAPI project created successfully! 🎉\n"
+ALREADY_EXISTS = "\nFolder 'demo' already exists. 😞\n"
 
 
 def test_startproject_default(tmp_path: Path):
@@ -26,3 +28,11 @@ def test_startproject_already_exists(tmp_path: Path):
         result = runner.invoke(app, ["startproject", "demo"])
         assert result.output == ALREADY_EXISTS
         assert result.exit_code == 0
+
+
+CURRENT_PATH = "."
+
+test_startproject_default(CURRENT_PATH)
+test_startproject_already_exists(CURRENT_PATH)
+
+rm_tmp_dir(CURRENT_PATH)
