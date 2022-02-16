@@ -11,6 +11,7 @@ from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
 
+
 app = typer.Typer(
     add_completion=False,
     help="FastAPI-Builder make fastapi projects easy!",
@@ -18,7 +19,7 @@ app = typer.Typer(
 )
 
 
-@app.command(help="Creates a FastAPI project.")
+@app.command(help="Create a FastAPI project.")
 def startproject(
     name: str,
     interactive: bool = typer.Option(False, help="Run in interactive mode."),
@@ -56,18 +57,26 @@ def startproject(
     generate_project(context)
 
 
-@app.command(help="Creates a FastAPI component.")
+@app.command(help="Create a FastAPI app.")
 def startapp(name: str):
+    # app 必须生成在 project 项目下
+    if ".fastapi-builder" not in os.listdir():
+        typer.echo(f"\nFastAPI app must be created under project folder!")
+    
     context = AppContext(name=name)
     generate_app(context)
 
 
 @app.command(help="Run a FastAPI application.")
 def run(prod: bool = typer.Option(False)):
+    # 命令必须运行在 project 项目下
+    if ".fastapi-builder" not in os.listdir():
+        typer.echo(f"\nFastAPI app must run under project folder!")
+    
     args = []
     if not prod:
         args.append("--reload")
-    app_file = os.getenv("FASTAPI_APP", "app.main")
+    app_file = os.getenv("FASTAPI_APP", "main")
     subprocess.call(["uvicorn", f"{app_file}:app", *args])
 
 
