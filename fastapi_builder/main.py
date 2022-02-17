@@ -58,10 +58,14 @@ def startproject(
 
 
 @app.command(help="Create a FastAPI app.")
-def startapp(name: str):
-    # app 必须生成在 project 项目下
-    if ".fastapi-builder" not in os.listdir():
+def startapp(
+    name: str,
+    force: bool = typer.Option(False, help="Create a FastAPI app by force.")
+):
+    # force=False 时，app 必须生成在 project 项目下
+    if not (force or ".fastapi-builder" in os.listdir()):
         typer.echo(f"\nFastAPI app must be created under project folder!")
+        return
     
     context = AppContext(name=name)
     generate_app(context)
@@ -72,6 +76,7 @@ def run(prod: bool = typer.Option(False)):
     # 命令必须运行在 project 项目下
     if ".fastapi-builder" not in os.listdir():
         typer.echo(f"\nFastAPI app must run under project folder!")
+        return
     
     args = []
     if not prod:
