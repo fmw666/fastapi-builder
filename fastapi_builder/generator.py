@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import TypeVar
 
 import typer
@@ -12,6 +13,17 @@ from fastapi_builder.context import AppContext, ProjectContext
 ContextType = TypeVar("ContextType", bound=BaseModel)
 
 
+# 清除 __pycache__ 文件夹
+def del_all_pycache(filepath: str):
+    for fname in os.listdir(filepath):
+        cur_path = os.path.join(filepath, fname)
+        if os.path.isdir(cur_path):
+            if fname == "__pycache__":
+                shutil.rmtree(cur_path)
+            else:
+                del_all_pycache(cur_path)
+
+
 def fill_template(template_name: str, context: ContextType):
     try:
         cookiecutter(
@@ -23,6 +35,13 @@ def fill_template(template_name: str, context: ContextType):
         typer.echo(f"\nFolder '{context.folder_name}' already exists. 😞")
     else:
         typer.echo(f"\nFastAPI {template_name} created successfully! 🎉")
+
+        filepath = context.folder_name
+        if template_name == "app":
+            filepath = f"./app_{context.folder_name}"
+        
+        # 清除 __pycache__ 文件夹
+        del_all_pycache(filepath)
 
 
 def generate_app(context: AppContext):
