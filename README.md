@@ -26,15 +26,19 @@
 
 ## 💬 特性
 
++ 参考 Django 化项目基础命令.
+
 + 创建可自定义的 project 项目.
 
 + 创建可定制的 app 应用.
 
 + 为您生成完整的项目结构.
 
-+ 可选的 Dockerfile.
++ 对数据库操作进行封装，便于轻松管理.
 
-+ 可选的 pre-commit.
++ 支持数据库包括 Mysql.
+
++ 可选的配置如： Dockerfile、pre-commit.
 
 <br>
 
@@ -46,13 +50,13 @@
 
 + [ ] 持续完善项目框架文档部分
 
-+ [ ] 优化 requirements.txt
++ [x] 优化 requirements.txt
 
 + [ ] 提供英文版本
 
 + [ ] 提供项目数据库 PostgreSQL 选项
 
-+ [ ] 提供完整的 run 方法
++ [x] 提供完整的 run 方法
 
 + [ ] 内置 alembic 数据迁移等管理
 
