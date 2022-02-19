@@ -11,6 +11,8 @@ from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
 
+from utils import check_env
+
 
 app = typer.Typer(
     add_completion=False,
@@ -72,11 +74,17 @@ def startapp(
 
 
 @app.command(help="Run a FastAPI application.")
-def run(prod: bool = typer.Option(False)):
+def run(
+    prod: bool = typer.Option(False),
+    check: bool = typer.Option(False, help="Check required run environment.")
+):
     # 命令必须运行在 project 项目下
     if ".fastapi-builder" not in os.listdir():
         typer.echo(f"\nFastAPI app must run under project folder!")
         return
+
+    if check:
+        return check_env()
     
     args = []
     if not prod:
