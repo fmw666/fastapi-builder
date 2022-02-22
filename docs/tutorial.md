@@ -106,6 +106,18 @@ $ fastapi startapp --help
 $ fastapi run
 ```
 
+当然，项目的运行可能出现异常情况，您可以通过 `--check` 参数检查运行环境
+
+```sh
+$ fastapi run --check
+```
+
+要查看帮助可以使用 `--help` 选项
+
+```sh
+$ fastapi run --help
+```
+
 <hr>
 
 **1. 启用虚拟环境**
