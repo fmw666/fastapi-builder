@@ -10,8 +10,7 @@ from fastapi_builder.constants import Database, License, PackageManager, PythonV
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
-
-from utils import check_env
+from fastapi_builder.utils import check_env
 
 
 app = typer.Typer(
