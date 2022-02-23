@@ -37,3 +37,9 @@ class License(BaseEnum):
 class Database(BaseEnum):
     # POSTGRES = "Postgres"
     MYSQL = "MySQL"
+
+
+class VenvCmd(BaseEnum):
+    CREATE = "create"
+    ON = "on"
+    OFF = "off"
