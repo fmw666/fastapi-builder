@@ -1,3 +1,5 @@
+from typing import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -13,7 +15,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base = declarative_base()
 
 # Dependency
-def get_db():
+def get_db() -> Generator:
     """
     每一个请求处理完毕后会关闭当前连接，不同的请求使用不同的连接
     """

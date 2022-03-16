@@ -1,12 +1,13 @@
 import os
 import subprocess
+import platform
 from typing import Optional
 
 import pkg_resources
 import typer
 from questionary.form import form
 
-from fastapi_builder.constants import Database, License, PackageManager, PythonVersion
+from fastapi_builder.constants import Database, License, PackageManager, PythonVersion, VenvCmd
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
@@ -90,6 +91,43 @@ def run(
         args.append("--reload")
     app_file = os.getenv("FASTAPI_APP", "main")
     subprocess.call(["uvicorn", f"{app_file}:app", *args])
+
+
+@app.command(help="Virtual environment manager.")
+def venv(
+    cmd: VenvCmd,
+    name: Optional[str] = typer.Option(None, "--name"),
+):
+    if cmd == VenvCmd.CREATE:
+        name = name if name else "venv"
+        if name in os.listdir():
+            typer.echo(f"\nVirtual environment {name} already exists.")
+            return
+        subprocess.call(["python", "-m", "venv", name])
+        typer.echo(f"\nVirtual environment {name} created successfully!")
+        return
+
+    # ON or OFF    
+    if name:
+        if _exec_venv_cmd(filename=name, activate=cmd):
+            typer.echo(f"\nVirtual environment {name} {cmd} successfully!")
+        else:
+            typer.echo(f"\nVirtual environment {name} {cmd} failed!")
+        return
+    
+    for fname in os.listdir():
+        if "env" not in fname:
+            continue
+        if _exec_venv_cmd(filename=fname, activate=cmd):
+            break
+
+    def _exec_venv_cmd(filename: str, activate: bool = True) -> bool:
+        cmd = "activate" if activate else "deactivate"
+        platform_cmd = {
+            "Windows": f".\\{filename}\\Scripts\\{cmd}",
+            "Linux": f"source ./{filename}/bin/{cmd}"
+        }
+        return os.system(platform_cmd[platform.system()]) == 0
 
 
 def version_callback(value: bool):
