@@ -111,7 +111,7 @@ $ fastapi venv create
 
 当然，您也可以自定义虚拟环境名称，只不过我们推荐这个名称为 `venv`
 
-> 注意，请在命名时带上 env 名称，负责管理器将不会搜寻到该虚拟环境
+> 注意，请在命名时带上 env 名称，否则管理器将不会搜寻到该虚拟环境
 
 ```sh
 $ fastapi venv create --name=my_env
