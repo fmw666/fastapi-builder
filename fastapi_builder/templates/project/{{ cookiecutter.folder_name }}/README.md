@@ -22,6 +22,20 @@
 
 ## 🚀 快速启用
 
+<http://127.0.0.1:8000/docs>：访问 swagger-ui 文档
+
+**使用 fastapi-builder 工具**
+
+我们更推荐您安装并使用 fastapi-builder 工具
+
+如果您需要快速启动项目，使用 `fastapi run`
+
+如果您需要检查项目配置，使用 `fastapi run --check`
+
+如果您需要快速配置项目，使用 `fastapi run --config`
+
+*当使用 fastapi-builder 工具后，您可以忽略下面操作。*
+
 **1. 修改项目配置**
 
 > 想要运行本项目，配置信息应该是您首先要关注的。
