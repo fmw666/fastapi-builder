@@ -11,7 +11,7 @@ from fastapi_builder.constants import Database, License, PackageManager, PythonV
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
-from fastapi_builder.utils import check_env
+from fastapi_builder.utils import check_env, read_conf, config_app, set_config_file_content
 
 
 app = typer.Typer(
@@ -25,7 +25,7 @@ app = typer.Typer(
 def startproject(
     name: str,
     interactive: bool = typer.Option(False, help="Run in interactive mode."),
-    database: Optional[Database] = typer.Option(None, case_sensitive=False),
+    database: Optional[Database] = typer.Option("MySQL", case_sensitive=False),
     database_name: Optional[str] = typer.Option(None, "--dbname"),
     docker: bool = typer.Option(False),
     license_: Optional[License] = typer.Option(None, "--license", case_sensitive=False),
@@ -65,7 +65,7 @@ def startapp(
     force: bool = typer.Option(False, help="Create a FastAPI app by force.")
 ):
     # force=False 时，app 必须生成在 project 项目下
-    if not (force or ".fastapi-builder" in os.listdir()):
+    if not (force or "fastapi-builder.ini" in os.listdir()):
         typer.echo(f"\nFastAPI app must be created under project folder!")
         return
     
@@ -76,15 +76,31 @@ def startapp(
 @app.command(help="Run a FastAPI application.")
 def run(
     prod: bool = typer.Option(False),
-    check: bool = typer.Option(False, help="Check required run environment.")
+    check: bool = typer.Option(False, help="Check required run environment."),
+    config: bool = typer.Option(False, help="Configuring startup resources.")
 ):
     # 命令必须运行在 project 项目下
-    if ".fastapi-builder" not in os.listdir():
+    if "fastapi-builder.ini" not in os.listdir():
         typer.echo(f"\nFastAPI app must run under project folder!")
         return
-
+    
+    # 获取配置文件 conf
+    conf = read_conf("fastapi-builder.ini")
+    
+    # 运行环境配置
+    if config:
+        config_app(conf)
+        return
+    
+    # 运行环境检查
     if check:
-        return check_env()
+        check_env()
+        return
+
+    # 如果是第一次启动项目，需要进行环境配置
+    if conf.get("fastapi_builder", "first_launch") == "true":
+        set_config_file_content("fastapi-builder.ini", "first_launch", "false")
+        config_app(conf)
     
     args = []
     if not prod:
@@ -98,29 +114,6 @@ def venv(
     cmd: VenvCmd,
     name: Optional[str] = typer.Option(None, "--name"),
 ):
-    if cmd == VenvCmd.CREATE:
-        name = name if name else "venv"
-        if name in os.listdir():
-            typer.echo(f"\nVirtual environment {name} already exists.")
-            return
-        subprocess.call(["python", "-m", "venv", name])
-        typer.echo(f"\nVirtual environment {name} created successfully!")
-        return
-
-    # ON or OFF    
-    if name:
-        if _exec_venv_cmd(filename=name, activate=cmd):
-            typer.echo(f"\nVirtual environment {name} {cmd} successfully!")
-        else:
-            typer.echo(f"\nVirtual environment {name} {cmd} failed!")
-        return
-    
-    for fname in os.listdir():
-        if "env" not in fname:
-            continue
-        if _exec_venv_cmd(filename=fname, activate=cmd):
-            break
-
     def _exec_venv_cmd(filename: str, activate: bool = True) -> bool:
         cmd = "activate" if activate else "deactivate"
         platform_cmd = {
@@ -128,6 +121,24 @@ def venv(
             "Linux": f"source ./{filename}/bin/{cmd}"
         }
         return os.system(platform_cmd[platform.system()]) == 0
+    
+    if cmd == VenvCmd.CREATE:
+        name = name if name is not None else "venv"
+        if name in os.listdir():
+            typer.echo(f"\nVirtual environment {name} already exists.")
+            return
+        subprocess.call(["python", "-m", "venv", name])
+        typer.echo(f"\nVirtual environment {name} created successfully!")
+        return
+
+    # cmd is ON or OFF
+    for fname in os.listdir():
+        if "env" not in fname:
+            continue
+        if _exec_venv_cmd(filename=fname, activate=cmd==VenvCmd.ON):
+            typer.echo(f"\nVirtual environment {fname} {cmd} successfully!")
+            return
+    typer.echo(f"\nVirtual environment {cmd} failed!")
 
 
 def version_callback(value: bool):
