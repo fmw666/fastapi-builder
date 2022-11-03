@@ -43,14 +43,14 @@ $ python tests/test_all
 
 **run**
 
-+ 每次运行读取 .fastapi-builder 检查是否是第一次运行
++ 每次运行读取 fastapi-builder.ini 检查是否是第一次运行
 
 + 若第一次运行，会自动 运行 --config 进行配置
 
-+ --check：检查 moudle、数据库
++ --check：检查 module、数据库
 
 + --config：配置
-    + 0）读取 .fastapi-builder，获取虚拟环境、打包方式、数据库等信息
+    + 0）读取 fastapi-builder.ini，获取虚拟环境、打包方式、数据库等信息
     + 1）检查是否在虚拟环境下，没有的话会检查是否存在虚拟环境，若不存在，询问用户是否创建
     + 2）进入虚拟环境
     + 3）安装 requirements.txt
