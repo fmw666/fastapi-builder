@@ -14,6 +14,7 @@ idna==3.3
 Jinja2==3.0.3
 jinja2-time==0.2.0
 MarkupSafe==2.0.1
+packaging==21.3
 poyo==0.5.0
 prompt-toolkit==3.0.22
 pydantic==1.8.2
