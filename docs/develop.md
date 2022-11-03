@@ -27,7 +27,7 @@ $ python tests/test_all
 **startproject**
 
 + 创建项目、定义数据库名
-+ 将配置项信息写入到 .fastapi-builder 文件中，方便后续读取
++ 将配置项信息写入到 fastapi-builder.ini 文件中，方便后续读取
 
 **startapp**
 
