@@ -23,7 +23,23 @@ DELETE /api/users/{user_id}  ->  delete_user  ->  删除单个用户
 # 新建用户
 @router.post("/", response_model=UserInfo, name="新建用户")
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    return User.create(db, email=user.email, hashed_password=user.password + "fakefake")
+    # 判断数据库内用户是否已存在
+    if User.get_by(db, username=user.username):
+        raise HTTPException(
+            status_code=404,
+            detail="用户已存在"
+        )
+    # 判断数据库内邮箱是否已存在
+    if User.get_by(db, email=user.email):
+        raise HTTPException(
+            status_code=404,
+            detail="邮箱已注册"
+        )
+    
+    db_user =  User(**user.dict())
+    db_user.change_password(user.password)
+    db_user.save(db)
+    return db_user
 
 
 # 获取所有用户
@@ -44,7 +60,30 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
 # 通过id更改用户
 @router.put("/{user_id}", name="更改用户 by user_id")
 async def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
-    return User.update_by(db, user_id, {"hashed_password": user.password, "email": "嘿嘿"})
+    db_user = User.get_or_404(db, id=user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # 判断数据库内新用户名是否已存在
+    db_user_by_username = User.get_by(db, username=user.username)
+    if db_user_by_username and db_user_by_username != db_user:
+        raise HTTPException(
+            status_code=404,
+            detail="用户名已存在"
+        )
+    # 判断数据库内新邮箱是否已存在
+    db_user_by_email = User.get_by(db, email=user.email)
+    if db_user_by_email and db_user_by_email != db_user:
+        raise HTTPException(
+            status_code=404,
+            detail="邮箱已注册"
+        )
+    
+    db_user.username = user.username
+    db_user.email = user.email
+    db_user.change_password(user.password)
+    db_user.save(db)
+    return db_user
 
 
 # 通过id删除用户
