@@ -15,6 +15,11 @@ class BaseEnum(str, Enum, metaclass=BaseMetadataEnum):
     """Base enum class."""
 
 
+class Language(BaseEnum):
+    CN = "cn"
+    EN = "en"
+
+
 class PackageManager(BaseEnum):
     PIP = "pip"
     POETRY = "poetry"
