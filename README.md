@@ -168,6 +168,8 @@ fastapi startapp [name]
 fastapi run
 ```
 
+通过访问 `http://127.0.0.1:8000/docs` 以确保 fastapi 服务正常运行.
+
 <br>
 
 ## ⚡ 特别感谢
