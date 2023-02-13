@@ -7,6 +7,7 @@
   "fastapi": "{{ cookiecutter.fastapi }}",
   "folder_name": "{{ cookiecutter.folder_name }}",
   "gitignore": ".gitignore",
+  "language": "{{ cookiecutter.language }}",
   "license": "{{ cookiecutter.license }}",
   "name": "{{ cookiecutter.name }}",
   "packaging": "{{ cookiecutter.packaging }}",
