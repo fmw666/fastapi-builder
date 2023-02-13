@@ -15,9 +15,9 @@ router = APIRouter()
 
 POST   /api/{{ cookiecutter.snake_name }}s            ->  create_{{ cookiecutter.snake_name }}  ->  创建 {{ cookiecutter.snake_name }}
 GET    /api/{{ cookiecutter.snake_name }}s            ->  get_{{ cookiecutter.snake_name }}s    ->  获取所有 {{ cookiecutter.snake_name }}
-GET    /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_id{{'}'}}  ->  get_{{ cookiecutter.snake_name }}     ->  获取单个 {{ cookiecutter.snake_name }}
-PUT    /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_id{{'}'}}  ->  update_{{ cookiecutter.snake_name }}  ->  更新单个 {{ cookiecutter.snake_name }}
-DELETE /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_id{{'}'}}  ->  delete_{{ cookiecutter.snake_name }}  ->  删除单个 {{ cookiecutter.snake_name }}
+GET    /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_id{{'}'}}   ->  get_{{ cookiecutter.snake_name }}     ->  获取单个 {{ cookiecutter.snake_name }}
+PUT    /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_id{{'}'}}   ->  update_{{ cookiecutter.snake_name }}  ->  更新单个 {{ cookiecutter.snake_name }}
+DELETE /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_id{{'}'}}   ->  delete_{{ cookiecutter.snake_name }}  ->  删除单个 {{ cookiecutter.snake_name }}
 """
 
 # 新建 {{ cookiecutter.snake_name }}
