@@ -7,7 +7,7 @@ import pkg_resources
 import typer
 from questionary.form import form
 
-from fastapi_builder.constants import Database, License, PackageManager, PythonVersion, VenvCmd
+from fastapi_builder.constants import Database, Language, License, PackageManager, PythonVersion, VenvCmd
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
@@ -25,6 +25,7 @@ app = typer.Typer(
 def startproject(
     name: str,
     interactive: bool = typer.Option(False, help="Run in interactive mode."),
+    language: Optional[Language] = typer.Option("cn", case_sensitive=False),
     database: Optional[Database] = typer.Option("MySQL", case_sensitive=False),
     database_name: Optional[str] = typer.Option(None, "--dbname"),
     docker: bool = typer.Option(False),
@@ -35,6 +36,7 @@ def startproject(
 ):
     if interactive:
         result = form(
+            language=question(Language),
             packaging=question(PackageManager),
             python=question(PythonVersion),
             license=question(License),
@@ -48,6 +50,7 @@ def startproject(
         database_name = database_name if database_name else name
         context = ProjectContext(
             name=name,
+            language=language,
             packaging=packaging,
             python=python,
             license=license_,
@@ -69,7 +72,14 @@ def startapp(
         typer.echo(f"\nFastAPI app must be created under project folder!")
         return
     
-    context = AppContext(name=name)
+    # 尝试从配置文件读取 language 信息，使用 try 是因为 force 条件下，不一定存在配置信息
+    try:
+        conf = read_conf("fastapi-builder.ini")
+        language = conf.get("fastapi_builder", "language") or "cn"
+    except:
+        language = "cn"
+
+    context = AppContext(name=name, language=language)
     generate_app(context)
 
 
