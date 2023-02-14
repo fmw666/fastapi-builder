@@ -43,6 +43,16 @@ def set_license():
     if license_ == "None":
         remove_paths(["LICENSE"])
 
+# README 选择
+def set_readme():
+    language = "{{ cookiecutter.language }}"
+    if language == "cn":
+        remove_paths(["README_EN.md"])
+    else:
+        remove_paths(["README.md"])
+        # 将 README_EN 重命名为 README
+        os.rename("README_EN.md", "README.md")
+
 
 def main():
     del_redundant_file()
@@ -50,6 +60,7 @@ def main():
     set_license()
     set_pre_commit()
     set_packaging()
+    set_readme()
 
 
 if __name__ == "__main__":
