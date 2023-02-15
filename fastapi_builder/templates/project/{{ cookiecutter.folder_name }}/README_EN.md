@@ -44,6 +44,7 @@ project
 ├── core/
 │   ├── .env     // Overall project configuration
 ├── alembic.ini  // Database migration configuration
+```
 
 ```s
 # core/.env
