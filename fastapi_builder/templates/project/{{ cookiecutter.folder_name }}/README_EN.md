@@ -33,7 +33,7 @@
 
 *If you have not used fastapi-builder, try to manually complete the steps in method 2.*
 
-## Method 2: Configure and Start the Project Manually
+### Method 2: Configure and Start the Project Manually
 
 **1. Modify project configuration**
 
