@@ -127,26 +127,39 @@ project
 │   ├── docs.py                   - fastapi docs 文档自定义.
 {% if cookiecutter.pre_commit == "True" -%}
 ├── .pre-commit-config.yaml       - pre-commit 配置文件.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ├── alembic.ini                   - alembic 数据库迁移工具配置文件.
 {% if cookiecutter.docker == "True" -%}
 ├── docker-compose.yaml           - docker 配置.
 ├── Dockerfile                    - dockfile 文件.
+{% else -%}
+
 {%- endif -%}
+├── fastapi-builder.ini           - fastapi-builder 配置.
 {% if cookiecutter.license -%}
 ├── LICENSE                       - 许可证信息.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ├── main.py                       - fastapi application 创建和配置.
 {% if cookiecutter.packaging == "poetry" -%}
 ├── pyproject.toml                - poetry 需求模块信息.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ├── README.md                     - 项目说明文档.
 {% if cookiecutter.packaging == "pip" -%}
 ├── requirements.txt              - pip 需求模块信息.
-{%- endif %}
-{%- if cookiecutter.pre_commit == "True" -%}
+{% else -%}
+
+{%- endif -%}
+{% if cookiecutter.pre_commit == "True" -%}
 ├── setup.cfg                     - pre-commit 配置文件.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ```
 
 <br>

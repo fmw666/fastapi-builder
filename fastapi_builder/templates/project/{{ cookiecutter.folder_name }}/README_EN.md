@@ -126,26 +126,39 @@ project
 │   ├── docs.py                   - Custom fastapi docs documentation.
 {% if cookiecutter.pre_commit == "True" -%}
 ├── .pre-commit-config.yaml       - Pre-commit configuration file.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ├── alembic.ini                   - alembic database migration tool configuration file.
 {% if cookiecutter.docker == "True" -%}
 ├── docker-compose.yaml           - Docker configuration.
 ├── Dockerfile                    - Dockerfile.
+{% else -%}
+
 {%- endif -%}
+├── .fastapi-builder.ini          - fastapi-builder configuration file
 {% if cookiecutter.license -%}
 ├── LICENSE                       - License information.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ├── main.py                       - fastapi application creation and configuration.
 {% if cookiecutter.packaging == "poetry" -%}
 ├── pyproject.toml                - Poetry requirement module information.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ├── README.md                     - Project description document.
 {% if cookiecutter.packaging == "pip" -%}
 ├── requirements.txt              - Pip requirement module information.
-{%- endif %}
-{%- if cookiecutter.pre_commit == "True" -%}
+{% else -%}
+
+{%- endif -%}
+{% if cookiecutter.pre_commit == "True" -%}
 ├── setup.cfg                     - Pre-commit configuration file.
-{%- endif %}
+{% else -%}
+
+{%- endif -%}
 ```
 
 <br>
