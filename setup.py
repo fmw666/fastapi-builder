@@ -34,7 +34,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fp:
 
 setup(
     name="fastapi-builder",
-    version="1.2.1",
+    version="1.3.0",
     author="fmw666",
     author_email="fmw19990718@qq.com",
     description="fastapi-builder Project generator and manager for FastAPI",
@@ -79,5 +79,7 @@ setup(
 )
 
 # how to upload to pypi?
+# pip install twine==3.8.0
+# pip install wheel==0.38.4
 # 1. python .\setup.py sdist bdist_wheel
 # 2. twine upload dist/*
