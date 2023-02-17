@@ -2,7 +2,7 @@ import sys
 import os
 from typing import Any, Dict
 file_path = os.path.abspath(__file__)
-proj_path = os.path.abspath(os.path.join(file_path, "../.."))
+proj_path = os.path.abspath(os.path.join(file_path, "..", ".."))
 sys.path.insert(0, proj_path)
 
 import pymysql
