@@ -130,10 +130,18 @@ $ fastapi venv off  # 关闭虚拟环境
 $ fastapi run
 ```
 
+> 所有项目当创建后首次运行时，fastapi-builder 会自动配置环境
+
 当然，项目的运行可能出现异常情况，您可以通过 `--check` 参数检查运行环境
 
 ```sh
 $ fastapi run --check
+```
+
+我们也提供针对错误环境的修正，您只需要通过 `--config` 来进行环境配置
+
+```sh
+$ fastapi run --config
 ```
 
 要查看帮助可以使用 `--help` 选项
@@ -155,4 +163,26 @@ $ virtualenv venv          # 创建虚拟环境
 $ .\venv\Scripts\activate  # 启动虚拟环境
 
 (venv)$ pip install fastapi-builder  # 安装模块
+```
+
+### 数据迁移管理
+
+fastapi-builder 内置 alembic 作为项目数据库迁移工具，我们提供了两条基础指令来帮助完成迁移文件的生成和执行：
+
+生成迁移文件
+
+```sh
+$ fastapi db makemigrations
+```
+
+生成迁移文件时，往往用户要提供 message 信息（默认为 "create migration"）
+
+```sh
+$ fastapi db makemigrations -m="here is the message"
+```
+
+执行迁移文件
+
+```sh
+$ fastapi db migrate
 ```
