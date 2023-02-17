@@ -44,6 +44,11 @@ class Database(BaseEnum):
     MYSQL = "MySQL"
 
 
+class DBCmd(BaseEnum):
+    MAKEMIGRATIONS = "makemigrations"
+    MIGRATE = "migrate"
+
+
 class VenvCmd(BaseEnum):
     CREATE = "create"
     ON = "on"

@@ -7,7 +7,7 @@ import pkg_resources
 import typer
 from questionary.form import form
 
-from fastapi_builder.constants import Database, Language, License, PackageManager, PythonVersion, VenvCmd
+from fastapi_builder.constants import Database, Language, License, PackageManager, PythonVersion, DBCmd, VenvCmd
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
 from fastapi_builder.helpers import binary_question, question, text_question
@@ -69,7 +69,7 @@ def startapp(
 ):
     # force=False 时，app 必须生成在 project 项目下
     if not (force or "fastapi-builder.ini" in os.listdir()):
-        typer.echo(f"\nFastAPI app must be created under project folder!")
+        typer.echo(f"\nFastAPI app must be created under project root folder!")
         return
     
     # 尝试从配置文件读取 language 信息，使用 try 是因为 force 条件下，不一定存在配置信息
@@ -91,7 +91,7 @@ def run(
 ):
     # 命令必须运行在 project 项目下
     if "fastapi-builder.ini" not in os.listdir():
-        typer.echo(f"\nFastAPI app must run under project folder!")
+        typer.echo(f"\nFastAPI app must run under project root folder!")
         return
     
     # 获取配置文件 conf
@@ -117,6 +117,29 @@ def run(
         args.append("--reload")
     app_file = os.getenv("FASTAPI_APP", "main")
     subprocess.call(["uvicorn", f"{app_file}:app", *args])
+
+
+@app.command(help="Database migration manager.")
+def db(
+    cmd: DBCmd,
+    migration_message: Optional[str] = typer.Option("create migration", "-m", help="migration message"),
+):
+    # 命令必须运行在 project 项目下
+    if "fastapi-builder.ini" not in os.listdir():
+        typer.echo(f"\n`fastapi db` command must run under project root folder!")
+        return
+
+    # 检查 alembic 是否安装
+    try:
+        subprocess.call(["alembic", "--version"])
+    except:
+        typer.echo(f"\nPlease install alembic correctly first!")
+        return
+    
+    if cmd == DBCmd.MAKEMIGRATIONS:
+        subprocess.call(["alembic", "revision", "--autogenerate", "-m", migration_message])
+    elif cmd == DBCmd.MIGRATE:
+        subprocess.call(["alembic", "upgrade", "head"])
 
 
 @app.command(help="Virtual environment manager.")
