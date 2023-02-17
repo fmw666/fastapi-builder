@@ -136,7 +136,7 @@ project
 {% else -%}
 
 {%- endif -%}
-├── .fastapi-builder.ini          - fastapi-builder configuration file
+├── .fastapi-builder.ini          - fastapi-builder configuration file.
 {% if cookiecutter.license -%}
 ├── LICENSE                       - License information.
 {% else -%}
