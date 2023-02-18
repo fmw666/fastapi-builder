@@ -158,7 +158,7 @@ def config_app(conf: ConfigParser):
             # 写入到配置文件中 core/.env alembic.ini
             sql_url = f"mysql+pymysql://{db_user}:{db_pswd}@{db_host}:{db_port}/{db_url.database}?charset={db_charset}"
             set_config_file_content("alembic.ini", "sqlalchemy.url", sql_url)
-            set_config_file_content(".\core\.env", "DB_CONNECTION", sql_url)
+            set_config_file_content(os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url)
 
             # 创建数据库
             cursor = conn.cursor()
