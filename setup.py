@@ -34,7 +34,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fp:
 
 setup(
     name="fastapi-builder",
-    version="1.3.0",
+    version="1.3.3",
     author="fmw666",
     author_email="fmw19990718@qq.com",
     description="fastapi-builder Project generator and manager for FastAPI",
