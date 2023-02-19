@@ -175,3 +175,32 @@ def config_app(conf: ConfigParser):
     # 5）创建数据库并运行迁移文件，创建相应的表
     os.system("alembic revision --autogenerate -m \"create migration\"")
     os.system("alembic upgrade head")
+
+
+# 新 app 注入到 project
+def new_app_inject_into_project(folder_name: str, pascal_name: str, snake_name: str):
+    # 打开 api/routes/api.py 文件，创建路由
+    api_file_path = os.path.join(".", "api", "routes", "api.py")
+    with open(api_file_path, "r") as f:
+        api_file_lines = f.readlines()
+
+    # 找到最后一个 import，在其下一行导入 app
+    last_import_line = 0
+    for i in range(len(api_file_lines)-1, -1, -1):
+        if api_file_lines[i].startswith("import"):
+            last_import_line = i
+            break
+    
+    api_file_lines.insert(last_import_line + 1, f"import app_{folder_name}.api\n")
+
+    # 创建 router
+    api_file_lines.append(f"router.include_router(app_{folder_name}.api.router, tags=[\"{pascal_name} 类\"], prefix=\"/{snake_name}s\")\n")
+
+    # 将修改后的内容写回到 api.py 文件
+    with open(api_file_path, "w") as f:
+        f.writelines(api_file_lines)
+    
+    # 打开 db/base.py 导入 models
+    db_file_path = os.path.join(".", "db", "base.py")
+    with open(db_file_path, "a") as f:
+        f.write(f"from app_{folder_name}.model import *\n")

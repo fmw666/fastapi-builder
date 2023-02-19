@@ -10,8 +10,8 @@ from questionary.form import form
 from fastapi_builder.constants import Database, Language, License, PackageManager, PythonVersion, DBCmd, VenvCmd
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
-from fastapi_builder.helpers import binary_question, question, text_question
-from fastapi_builder.utils import check_env, read_conf, config_app, set_config_file_content
+from fastapi_builder.helpers import binary_question, question, text_question, snake_to_camel, camel_to_pascal
+from fastapi_builder.utils import check_env, read_conf, config_app, set_config_file_content, new_app_inject_into_project
 
 
 app = typer.Typer(
@@ -78,8 +78,29 @@ def startapp(
         language = conf.get("fastapi_builder", "language") or "cn"
     except:
         language = "cn"
+    
+    # 生成 app 相关名字
+    folder_name = name.lower().replace(" ", "-").strip()
+    snake_name = folder_name.replace("-", "_")
+    camel_name = snake_to_camel(snake_name)
+    pascal_name = camel_to_pascal(camel_name)
 
-    context = AppContext(name=name, language=language)
+    # 尝试路由自动注入:
+    # 1. 修改 db/base.py 导入 models
+    # 2. 修改 api/routes/api.py 创建路由
+    try:
+        new_app_inject_into_project(folder_name=folder_name, pascal_name=pascal_name, snake_name=snake_name)
+    except:
+        pass
+
+    context = AppContext(
+        name=name,
+        folder_name=folder_name,
+        snake_name=snake_name,
+        camel_name=camel_name,
+        pascal_name=pascal_name,
+        language=language
+    )
     generate_app(context)
 
 
