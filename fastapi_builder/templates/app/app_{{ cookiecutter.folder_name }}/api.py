@@ -21,13 +21,13 @@ DELETE /api/{{ cookiecutter.snake_name }}s/{{'{'}}{{ cookiecutter.snake_name }}_
 """
 
 # 新建 {{ cookiecutter.snake_name }}
-@router.post("/", response_model={{ cookiecutter.pascal_name }}Info, name="新建 {{ cookiecutter.snake_name }}")
+@router.post("", response_model={{ cookiecutter.pascal_name }}Info, name="新建 {{ cookiecutter.snake_name }}")
 async def create_{{ cookiecutter.snake_name }}({{ cookiecutter.snake_name }}: {{ cookiecutter.pascal_name }}Create, db: Session = Depends(get_db)):
     return {{ cookiecutter.pascal_name }}.create(db)
 
 
 # 获取所有 {{ cookiecutter.snake_name }}
-@router.get("/", response_model=List[{{ cookiecutter.pascal_name }}Info], name="获取所有 {{ cookiecutter.snake_name }}")
+@router.get("", response_model=List[{{ cookiecutter.pascal_name }}Info], name="获取所有 {{ cookiecutter.snake_name }}")
 async def get_{{ cookiecutter.snake_name }}s(db: Session = Depends(get_db)):
     return {{ cookiecutter.pascal_name }}.all(db)
 

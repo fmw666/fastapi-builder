@@ -21,7 +21,7 @@ DELETE /api/users/{user_id}  ->  delete_user  ->  删除单个用户
 """
 
 # 新建用户
-@router.post("/", response_model=UserInfo, name="新建用户")
+@router.post("", response_model=UserInfo, name="新建用户")
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     # 判断数据库内用户是否已存在
     if User.get_by(db, username=user.username):
@@ -43,7 +43,7 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 # 获取所有用户
-@router.get("/", response_model=List[UserInfo], name="获取所有用户")
+@router.get("", response_model=List[UserInfo], name="获取所有用户")
 async def get_users(db: Session = Depends(get_db)):
     return User.all(db)
 
