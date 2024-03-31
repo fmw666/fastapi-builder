@@ -9,7 +9,7 @@ from core.config import API_PREFIX
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=API_PREFIX + "/auth/token", auto_error=False)
 
 class OAuth2Form(OAuth2PasswordRequestForm):
-    """将登录使用的表单中部分字段隐藏, 使用该模型将无法使用swagger登录"""
+    """将登录使用的表单中部分字段隐藏, 使用该模型将无法使用 swagger 登录"""
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password

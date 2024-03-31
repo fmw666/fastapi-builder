@@ -13,7 +13,7 @@ from db.database import get_db
 from lib.security import oauth2_scheme
 
 
-# 生成token
+# 生成 token
 def create_access_token(subject: int, expires_delta: timedelta = None) -> str:
     """
     使用 python-jose 库生成用户token

@@ -18,5 +18,6 @@ class UserInfo(UserBase):
     """用户信息"""
     id: int
     updated_at: Optional[datetime.datetime] = None
+
     class Config(object):
         orm_mode = True
