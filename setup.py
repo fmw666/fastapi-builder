@@ -34,13 +34,13 @@ with open("requirements.txt", "r", encoding="utf-8") as fp:
 
 setup(
     name="fastapi-builder",
-    version="1.3.3",
+    version="2.0.0",
     author="fmw666",
-    author_email="fmw19990718@qq.com",
+    author_email="fmw19990718@gmail.com",
     description="fastapi-builder Project generator and manager for FastAPI",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    keywords=["fastapi", "builder"],
+    keywords=["fastapi", "builder", "project", "python", "fastapi-builder"],
     # 项目主页
     url="https://github.com/fmw666/fastapi-builder",
     # 需要被打包的内容
@@ -69,10 +69,12 @@ setup(
         "License :: OSI Approved :: MIT License",
         # 目标 Python 版本
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: Implementation :: CPython",
         # 操作系统
         "Operating System :: OS Independent"
     ]
