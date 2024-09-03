@@ -83,5 +83,6 @@ setup(
 # how to upload to pypi?
 # pip install twine==3.8.0
 # pip install wheel==0.38.4
+# pip install packaging==24.1
 # 1. python .\setup.py sdist bdist_wheel
-# 2. twine upload dist/*
+# 2. twine upload dist/* -u "__token__" -p "<token>"
