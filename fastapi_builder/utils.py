@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import subprocess
 import configparser
@@ -9,8 +10,8 @@ import questionary
 from configparser import ConfigParser
 
 
-# 运行环境检查
 def check_env():
+    """运行环境检查"""
     # 模块检查
     typer.secho("[module]", fg=typer.colors.MAGENTA, bold=True)
     fp = open("./requirements.txt")
@@ -35,15 +36,19 @@ def check_env():
                 typer.secho("higher version.", fg=typer.colors.YELLOW)
             else:
                 typer.secho("lower version.", fg=typer.colors.YELLOW)
-        except:
+        except Exception:
             try:
-                subprocess.check_call(["pip", "show", name], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                subprocess.check_call(
+                    ["pip", "show", name],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.STDOUT,
+                )
                 typer.secho("pass", fg=typer.colors.GREEN)
-            except:
+            except Exception:
                 typer.secho("module not exist!", fg=typer.colors.RED)
     fp.close()
     typer.echo()
-    
+
     # 数据库检查
     typer.secho("[db]", fg=typer.colors.MAGENTA, bold=True)
     """
@@ -56,28 +61,31 @@ def check_env():
     try:
         db_url = __import__("config").DATABASE_URL
         db_charset = __import__("config").DB_CHARSET
-    except:
+    except Exception:
         typer.secho("module databases not installed", fg=typer.colors.RED)
 
     typer.echo("check mysql      : ", nl=False)
     try:
-        subprocess.check_call(["mysql", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["mysql", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+        )
         typer.secho("pass", fg=typer.colors.GREEN)
-    except:
+    except Exception:
         typer.secho("not exist!", fg=typer.colors.RED)
-    
+
     typer.echo("check connection : ", nl=False)
     try:
         import pymysql
+
         conn = pymysql.connect(
             host=db_url.hostname,
             port=db_url.port,
             user=db_url.username,
             password=db_url.password,
-            charset=db_charset
+            charset=db_charset,
         )
         typer.secho("pass", fg=typer.colors.GREEN)
-    except Exception as e:
+    except Exception:
         typer.secho("failed", fg=typer.colors.RED)
     else:
         cursor = conn.cursor()
@@ -89,15 +97,22 @@ def check_env():
             typer.secho("not exist!", fg=typer.colors.RED)
 
 
-# 读取配置文件
 def read_conf(file_name: str) -> ConfigParser:
+    """读取配置文件"""
     conf = configparser.ConfigParser()
     conf.read(file_name)
     return conf
 
 
-# 修改配置文件内容
-def set_config_file_content(file_path: str, key: str, new_value: str):
+def set_config_file_content(file_path: str, key: str, new_value: str) -> None:
+    """
+    修改配置文件内容
+
+    Args:
+        file_path (str): 配置文件路径
+        key (str): 配置项
+        new_value (str): 新值
+    """
     file_lines = []
     with open(file_path) as fp:
         for line in fp.readlines():
@@ -112,9 +127,10 @@ def set_config_file_content(file_path: str, key: str, new_value: str):
         fp.write(file_content)
 
 
-# 配置应用
-def config_app(conf: ConfigParser):
+def config_app(conf: ConfigParser) -> None:
     """
+    配置应用
+
     0）读取 .fastapi-builder，获取虚拟环境、打包方式、数据库等信息
     1）检查是否在虚拟环境下，没有的话会检查是否存在虚拟环境，若不存在，询问用户是否创建
     2）进入虚拟环境
@@ -126,12 +142,14 @@ def config_app(conf: ConfigParser):
     typer.echo("install required modules...")
     os.system("pip install -r requirements.txt")
     typer.echo("")
-    
+
     # 4）检查数据库连接，若失败，让用户填写数据库地址、用户名、端口。重复检查直到连接
     # 若没安装 mysql/Postgres 直接退出
     try:
-        subprocess.check_call(["mysql", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    except:
+        subprocess.check_call(
+            ["mysql", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+        )
+    except Exception:
         typer.secho("Please make sure you download mysql already!", fg=typer.colors.RED)
         return
     # 与数据库建立连接
@@ -152,17 +170,22 @@ def config_app(conf: ConfigParser):
                 port=db_port,
                 user=db_user,
                 password=db_pswd,
-                charset=db_charset
+                charset=db_charset,
             )
             typer.secho("success", fg=typer.colors.GREEN)
             # 写入到配置文件中 core/.env alembic.ini
-            sql_url = f"mysql+pymysql://{db_user}:{db_pswd}@{db_host}:{db_port}/{db_url.database}?charset={db_charset}"
+            sql_url = f"mysql+pymysql://{db_user}:{db_pswd}@{db_host}:{db_port}/{db_url.database}?charset={db_charset}"  # noqa
             set_config_file_content("alembic.ini", "sqlalchemy.url", sql_url)
-            set_config_file_content(os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url)
+            set_config_file_content(
+                os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url
+            )
 
             # 创建数据库
             cursor = conn.cursor()
-            cursor.execute("create database if not exists %s default charset utf8mb4;" % db_url.database)
+            cursor.execute(
+                "create database if not exists %s default charset utf8mb4;"
+                % db_url.database
+            )
             break
         except Exception:
             typer.secho("fail", fg=typer.colors.RED)
@@ -177,30 +200,76 @@ def config_app(conf: ConfigParser):
     os.system("alembic upgrade head")
 
 
-# 新 app 注入到 project
-def new_app_inject_into_project(folder_name: str, pascal_name: str, snake_name: str):
-    # 打开 api/routes/api.py 文件，创建路由
+def new_app_inject_into_project(
+    folder_name: str, pascal_name: str, snake_name: str
+) -> None:
+    """
+    新 app 注入到 project
+
+    Args:
+        folder_name (str): app 文件夹名. eg: computer-book
+        pascal_name (str): app 驼峰命名. eg: ComputerBook
+        snake_name (str): app 蛇形命名. eg: computer_book
+    """
+
+    # 1. 打开 api/routes/api.py 文件，创建路由
+    import_line = f"from apps.app_{folder_name}.api import router as {folder_name}_router"
+    include_router_line = f"router.include_router({folder_name}_router, tags=[\"{pascal_name} 类\"], prefix=\"/{snake_name}s\")"  # noqa
+
+    def get_new_content(pattern: str | re.Pattern[str], content: str, new_line: str) -> str:
+        last_match = re.findall(pattern, content)
+        if last_match:
+            last_position = content.rfind(last_match[-1]) + len(last_match[-1])
+        else:
+            last_position = 0
+
+        content = content[:last_position] + "\n" + new_line + content[last_position:]
+        return content
+
     api_file_path = os.path.join(".", "api", "routes", "api.py")
-    with open(api_file_path, "r") as f:
-        api_file_lines = f.readlines()
+    with open(api_file_path, "r+", encoding="utf8") as f:
+        content = f.read()
+        # 找到最后一个 from ... import ...
+        content = get_new_content(r"from \S+ import \S+ as \S+", content, import_line)
+        # 找到最后一个 router.include_router(...)
+        content = get_new_content(r"router.include_router\([^)]*\)", content, include_router_line)
 
-    # 找到最后一个 import，在其下一行导入 app
-    last_import_line = 0
-    for i in range(len(api_file_lines)-1, -1, -1):
-        if api_file_lines[i].startswith("import"):
-            last_import_line = i
-            break
-    
-    api_file_lines.insert(last_import_line + 1, f"import app_{folder_name}.api\n")
+        f.seek(0)
+        f.write(content)
+        f.truncate()
 
-    # 创建 router
-    api_file_lines.append(f"router.include_router(app_{folder_name}.api.router, tags=[\"{pascal_name} 类\"], prefix=\"/{snake_name}s\")\n")
-
-    # 将修改后的内容写回到 api.py 文件
-    with open(api_file_path, "w") as f:
-        f.writelines(api_file_lines)
-    
-    # 打开 db/base.py 导入 models
+    # 2. 打开 db/base.py 导入 models
     db_file_path = os.path.join(".", "db", "base.py")
-    with open(db_file_path, "a") as f:
-        f.write(f"from app_{folder_name}.model import *\n")
+    with open(db_file_path, "r+", encoding="utf8") as f:
+        content = f.read()
+
+        # 找到最后一个 from ... import ... 语句
+        last_import_match = re.findall(r"from \S+ import \S+", content)
+        if last_import_match:
+            last_import_position = content.rfind(last_import_match[-1]) + len(last_import_match[-1])
+        else:
+            last_import_position = 0
+
+        # 构建新的内容，添加新的导入语句
+        content = (
+            content[:last_import_position] +
+            "\n" + f"from apps.app_{snake_name}.model import {pascal_name}" +
+            content[last_import_position:]
+        )
+
+        # 找到 __all__ 赋值语句
+        all_match = re.search(r"__all__ = \[(.*?)\]", content)
+        if all_match:
+            all_entries = re.findall(r"\"(\w+)\"|\'(\w+)\'", all_match.group(1))
+            all_entries = [entry[0] if entry[0] else entry[1] for entry in all_entries]  # 处理元组结果
+            all_entries.append(pascal_name)
+            updated_all = ", ".join(f"\"{entry}\"" for entry in all_entries)
+            content = (
+                content[:all_match.start()] +
+                f"__all__ = [{updated_all}]" +
+                content[all_match.end():]
+            )
+
+        f.seek(0)
+        f.write(content)
+        f.truncate()

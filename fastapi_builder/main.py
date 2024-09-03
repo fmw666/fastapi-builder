@@ -7,11 +7,28 @@ import pkg_resources
 import typer
 from questionary.form import form
 
-from fastapi_builder.constants import Database, Language, License, PackageManager, PythonVersion, DBCmd, VenvCmd
+from fastapi_builder.constants import (
+    Database,
+    Language,
+    License,
+    PackageManager,
+    PythonVersion,
+    DBCmd,
+    VenvCmd,
+)
 from fastapi_builder.context import AppContext, ProjectContext
 from fastapi_builder.generator import generate_app, generate_project
-from fastapi_builder.helpers import binary_question, question, text_question, snake_to_camel, camel_to_pascal
-from fastapi_builder.utils import check_env, read_conf, config_app, set_config_file_content, new_app_inject_into_project
+from fastapi_builder.helpers import (
+    binary_question,
+    question,
+    text_question,
+)
+from fastapi_builder.utils import (
+    check_env,
+    read_conf,
+    config_app,
+    set_config_file_content,
+)
 
 
 app = typer.Typer(
@@ -32,7 +49,7 @@ def startproject(
     license_: Optional[License] = typer.Option(None, "--license", case_sensitive=False),
     packaging: PackageManager = typer.Option(PackageManager.PIP),
     pre_commit: bool = typer.Option(False, "--pre-commit"),
-    python: PythonVersion = typer.Option(PythonVersion.THREE_DOT_EIG),
+    python: PythonVersion = typer.Option(PythonVersion.THREE_DOT_TEN),
 ):
     if interactive:
         result = form(
@@ -57,72 +74,56 @@ def startproject(
             pre_commit=pre_commit,
             docker=docker,
             database=database,
-            database_name=database_name
+            database_name=database_name,
         )
     generate_project(context)
 
 
 @app.command(help="Create a FastAPI app.")
 def startapp(
-    name: str,
-    force: bool = typer.Option(False, help="Create a FastAPI app by force.")
+    name: str, force: bool = typer.Option(False, help="Create a FastAPI app by force.")
 ):
     # force=False 时，app 必须生成在 project 项目下
     if not (force or "fastapi-builder.ini" in os.listdir()):
-        typer.echo(f"\nFastAPI app must be created under project root folder!")
+        typer.echo("\n❌ FastAPI app must be created under project root folder!")
         return
-    
+
+    output_dir = "." if force else "./apps"
+
     # 尝试从配置文件读取 language 信息，使用 try 是因为 force 条件下，不一定存在配置信息
     try:
         conf = read_conf("fastapi-builder.ini")
         language = conf.get("fastapi_builder", "language") or "cn"
-    except:
+    except Exception:
         language = "cn"
-    
-    # 生成 app 相关名字
-    folder_name = name.lower().replace(" ", "-").strip()
-    snake_name = folder_name.replace("-", "_")
-    camel_name = snake_to_camel(snake_name)
-    pascal_name = camel_to_pascal(camel_name)
-
-    # 尝试路由自动注入:
-    # 1. 修改 db/base.py 导入 models
-    # 2. 修改 api/routes/api.py 创建路由
-    try:
-        new_app_inject_into_project(folder_name=folder_name, pascal_name=pascal_name, snake_name=snake_name)
-    except:
-        pass
 
     context = AppContext(
         name=name,
-        folder_name=folder_name,
-        snake_name=snake_name,
-        camel_name=camel_name,
-        pascal_name=pascal_name,
-        language=language
+        language=language,
     )
-    generate_app(context)
+
+    generate_app(context, output_dir)
 
 
 @app.command(help="Run a FastAPI application.")
 def run(
     prod: bool = typer.Option(False),
     check: bool = typer.Option(False, help="Check required run environment."),
-    config: bool = typer.Option(False, help="Configuring startup resources.")
+    config: bool = typer.Option(False, help="Configuring startup resources."),
 ):
     # 命令必须运行在 project 项目下
     if "fastapi-builder.ini" not in os.listdir():
-        typer.echo(f"\nFastAPI app must run under project root folder!")
+        typer.echo("\nFastAPI app must run under project root folder!")
         return
-    
+
     # 获取配置文件 conf
     conf = read_conf("fastapi-builder.ini")
-    
+
     # 运行环境配置
     if config:
         config_app(conf)
         return
-    
+
     # 运行环境检查
     if check:
         check_env()
@@ -132,7 +133,7 @@ def run(
     if conf.get("fastapi_builder", "first_launch") == "true":
         set_config_file_content("fastapi-builder.ini", "first_launch", "false")
         config_app(conf)
-    
+
     args = []
     if not prod:
         args.append("--reload")
@@ -143,22 +144,26 @@ def run(
 @app.command(help="Database migration manager.")
 def db(
     cmd: DBCmd,
-    migration_message: Optional[str] = typer.Option("create migration", "-m", help="migration message"),
+    migration_message: Optional[str] = typer.Option(
+        "create migration", "-m", help="migration message"
+    ),
 ):
     # 命令必须运行在 project 项目下
     if "fastapi-builder.ini" not in os.listdir():
-        typer.echo(f"\n`fastapi db` command must run under project root folder!")
+        typer.echo("\n`fastapi db` command must run under project root folder!")
         return
 
     # 检查 alembic 是否安装
     try:
         subprocess.call(["alembic", "--version"])
-    except:
-        typer.echo(f"\nPlease install alembic correctly first!")
+    except Exception:
+        typer.echo("\nPlease install alembic correctly first!")
         return
-    
+
     if cmd == DBCmd.MAKEMIGRATIONS:
-        subprocess.call(["alembic", "revision", "--autogenerate", "-m", migration_message])
+        subprocess.call(
+            ["alembic", "revision", "--autogenerate", "-m", migration_message]
+        )
     elif cmd == DBCmd.MIGRATE:
         subprocess.call(["alembic", "upgrade", "head"])
 
@@ -172,10 +177,10 @@ def venv(
         cmd = "activate" if activate else "deactivate"
         platform_cmd = {
             "Windows": f".\\{filename}\\Scripts\\{cmd}",
-            "Linux": f"source ./{filename}/bin/{cmd}"
+            "Linux": f"source ./{filename}/bin/{cmd}",
         }
         return os.system(platform_cmd[platform.system()]) == 0
-    
+
     if cmd == VenvCmd.CREATE:
         name = name if name is not None else "venv"
         if name in os.listdir():
@@ -189,7 +194,7 @@ def venv(
     for fname in os.listdir():
         if "env" not in fname:
             continue
-        if _exec_venv_cmd(filename=fname, activate=cmd==VenvCmd.ON):
+        if _exec_venv_cmd(filename=fname, activate=cmd == VenvCmd.ON):
             typer.echo(f"\nVirtual environment {fname} {cmd} successfully!")
             return
     typer.echo(f"\nVirtual environment {cmd} failed!")
@@ -211,5 +216,4 @@ def main(
         is_eager=True,
         help="Show the FastAPI-Builder version information.",
     )
-):
-    ...
+): ...

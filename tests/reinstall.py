@@ -10,14 +10,14 @@ if __name__ == "__main__":
 
     # 打包文件所在路径
     dist_path = "dist/"
-    
+
     # 删除 dist 目录下打包文件
     try:
         for fname in os.listdir(dist_path):
             if fname.endswith(".whl"):
                 os.remove(os.path.join(dist_path, fname))
                 break
-    except:
+    except FileNotFoundError:
         pass
 
     # 打包并安装

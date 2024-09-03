@@ -1,5 +1,6 @@
 from fastapi_builder.main import app
 
+
 def main():
     app(prog_name="fastapi")
 
