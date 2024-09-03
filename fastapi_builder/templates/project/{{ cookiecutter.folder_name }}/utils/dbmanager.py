@@ -1,14 +1,20 @@
+import argparse
 import sys
 import os
-from typing import Any, Dict
+
+import pymysql
+
+from typing import Dict
+
+from pymysql import Connection
+from pymysql.cursors import Cursor
+
 file_path = os.path.abspath(__file__)
 proj_path = os.path.abspath(os.path.join(file_path, "..", ".."))
 sys.path.insert(0, proj_path)
 
-import pymysql
-
-from core.config import DATABASE_URL, DB_CHARSET
-from core.logger import logger
+from core.config import settings  # noqa
+from core.logger import app_logger as logger  # noqa
 
 
 class DBManager(object):
@@ -16,74 +22,85 @@ class DBManager(object):
     提供系统 Mysql 服务：
     mysql 服务检查、数据库检查、迁移文件检查、表生成
     """
-    # 初始化数据
-    _dbname = DATABASE_URL.database
-    _host = DATABASE_URL.hostname
-    _port = DATABASE_URL.port
-    _user = DATABASE_URL.username
-    _password = DATABASE_URL.password
+
+    _dbname = settings.DATABASE_URL.database
+    _host = settings.DATABASE_URL.hostname
+    _port = settings.DATABASE_URL.port
+    _user = settings.DATABASE_URL.username
+    _password = settings.DATABASE_URL.password
 
     @classmethod
-    def get_conn(cls) -> Any:
+    def get_conn(cls) -> Connection | None:
         # 连接 mysql 服务，并获取 connection
-        logger.info("mysql 连接信息：\"%s\"" % DATABASE_URL)
+        logger.info(f'mysql 连接信息："{cls._dbname}"')
         try:
-            conn = pymysql.connect(
+            conn: Connection = pymysql.connect(
                 host=cls._host,
                 port=cls._port,
                 user=cls._user,
                 password=cls._password,
-                charset=DB_CHARSET
+                charset=settings.DB_CHARSET,
             )
             logger.info("数据库连接成功!")
 
         except Exception as e:
             # 打印错误信息
             error_reason: str = ""
-            # (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
+            # (2003, "Can't connect to MySQL server on '127.0.0.1'
+            # ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
             if str(e).startswith("(2003"):
                 error_reason = "mysql 无法连接，请检查 mysql 服务是否正常启动."
-            # (1045, "Access denied for user 'root'@'localhost' (using password: YES)")
+            # (1045, "Access denied for user 'root'@'localhost'
+            # (using password: YES)")
             elif str(e).startswith("(1045"):
                 error_reason = "mysql 拒绝访问，请检查参数是否有误."
             else:
                 error_reason = "原因不详."
-            logger.error("数据库连接失败! 原因：{error_reason}\n系统日志：{exc_msg}".format(error_reason=error_reason, exc_msg=e))
+            logger.error(f"数据库连接失败! 原因：{error_reason}\n系统日志：{e}")
             conn = None
 
         return conn
 
-
-    # 执行迁移文件
     @classmethod
-    def run_migrate(cls):
+    def make_and_run_migrate(cls):
+        # 执行迁移文件
         logger.info("执行迁移文件...")
         os.chdir(proj_path)
-        os.system("alembic revision --autogenerate -m \"create migration\"")
-        os.system("alembic upgrade head")
+        os.system("alembic revision --autogenerate -m \"autocreate migration\"")
+        os.system("alembic upgrade heads")
         logger.info("执行迁移文件完成.")
 
+    @classmethod
+    def run_migrate(cls):
+        # 执行迁移文件
+        logger.info("执行迁移文件...")
+        os.chdir(proj_path)
+        # os.system('alembic revision --autogenerate -m "autocreate migration"')
+        os.system("alembic upgrade heads")
+        logger.info("执行迁移文件完成.")
 
-    # 检查 mysql 服务、数据库及表是否存在
     @classmethod
     def check_and_autocreate(cls) -> Dict[str, str]:
+        # 检查 mysql 服务、数据库及表是否存在
         logger.info("检查 mysql 服务、数据库及表.")
 
         # 建立游标
         conn = cls.get_conn()
         if not conn:
             return {"code": -1, "msg": "获取连接失败."}
-        
-        cursor = conn.cursor()
+
+        cursor: Cursor = conn.cursor()
 
         # 检查数据库是否存在
-        if cursor.execute("show databases like '%s';" % cls._dbname):
-            logger.info("数据库：%s 已存在." % cls._dbname)
+        if cursor.execute(f"show databases like '{cls._dbname}';"):
+            logger.info(f"数据库：{cls._dbname} 已存在.")
         else:
             # 数据库不存在，创建数据库
-            logger.info("数据库：%s 不存在. 正在自动创建..." % cls._dbname)
-            cursor.execute("create database if not exists %s default charset utf8mb4;" % cls._dbname)
-            logger.info("数据库：%s 创建完成." % cls._dbname)
+            logger.info(f"数据库：{cls._dbname} 不存在. 正在自动创建...")
+            cursor.execute(
+                f"create database if not exists `{cls._dbname}` default charset utf8mb4;"
+            )
+            logger.info(f"数据库：{cls._dbname} 创建完成.")
 
         # 检查数据库表是否存在
         cls.run_migrate()
@@ -92,28 +109,30 @@ class DBManager(object):
 
         return {"code": 0, "msg": "执行完成!"}
 
-
-    # 重置 mysql 数据库及数据库内所有表
     @classmethod
     def reset_database(cls) -> Dict[str, str]:
+        # 重置 mysql 数据库及数据库内所有表
+
         # 建立游标
         conn = cls.get_conn()
         if not conn:
             return {"code": -1, "msg": "获取连接失败."}
-        
-        cursor = conn.cursor()
+
+        cursor: Cursor = conn.cursor()
 
         # 检查数据库是否存在
-        if cursor.execute("show databases like '%s';" % cls._dbname):
-            logger.info("数据库：%s 已存在. 正在自动删除..." % cls._dbname)
-            cursor.execute("drop database if exists %s;" % cls._dbname)
-            logger.info("数据库：%s 删除完成. 正在重新创建..." % cls._dbname)
+        if cursor.execute(f"show databases like '{cls._dbname}';"):
+            logger.info(f"数据库：{cls._dbname} 已存在. 正在自动删除...")
+            cursor.execute(f"drop database if exists {cls._dbname};")
+            logger.info(f"数据库：{cls._dbname} 删除完成. 正在重新创建...")
         else:
             # 数据库不存在，创建数据库
-            logger.info("数据库：%s 不存在. 正在自动创建..." % cls._dbname)
-        
-        cursor.execute("create database if not exists %s default charset utf8mb4;" % cls._dbname)
-        logger.info("数据库：%s 创建完成." % cls._dbname)
+            logger.info(f"数据库：{cls._dbname} 不存在. 正在自动创建...")
+
+        cursor.execute(
+            f"create database if not exists {cls._dbname} " "default charset utf8mb4;"
+        )
+        logger.info(f"数据库：{cls._dbname} 创建完成.")
 
         # 检查数据库表是否存在
         cls.run_migrate()
@@ -122,42 +141,60 @@ class DBManager(object):
 
         return {"code": 0, "msg": "执行完成!"}
 
-
-    # 删除数据库
     @classmethod
     def remove_database(cls) -> Dict[str, str]:
+        # 删除数据库
         # 建立游标
         conn = cls.get_conn()
         if not conn:
             return {"code": -1, "msg": "获取连接失败."}
 
-        cursor = conn.cursor()
+        cursor: Cursor = conn.cursor()
 
-        if cursor.execute("show databases like '%s';" % cls._dbname):
-            logger.info("数据库：%s 已存在. 正在自动删除..." % cls._dbname)
-            cursor.execute("drop database if exists %s;" % cls._dbname)
-            logger.info("数据库：%s 删除完成." % cls._dbname)
+        if cursor.execute(f"show databases like '{cls._dbname}';"):
+            logger.info(f"数据库：{cls._dbname} 已存在. 正在自动删除...")
+            cursor.execute(f"drop database if exists `{cls._dbname}`;")
+            logger.info(f"数据库：{cls._dbname} 删除完成.")
         else:
             # 数据库不存在，创建数据库
-            logger.info("数据库：%s 不存在." % cls._dbname)
-        
+            logger.info(f"数据库：{cls._dbname} 不存在.")
+
         return {"code": 0, "msg": "执行完成!"}
 
 
-__all__ = ["MysqlService"]
+__all__ = ["DBManager"]
+
 
 if __name__ == "__main__":
-    
-    if len(sys.argv) > 1:
-        cmd = sys.argv[1].lower()
-        if cmd == "-c":
+    parser = argparse.ArgumentParser(description="Manage the database operations.")
+    parser.add_argument(
+        "-c",
+        "--create",
+        action="store_true",
+        help="Check and auto-create database if not exist",
+    )
+    parser.add_argument("-r", "--reset", action="store_true", help="Reset the database")
+    parser.add_argument(
+        "-d", "--delete", action="store_true", help="Delete the database"
+    )
+    parser.add_argument(
+        "-m", "--migrate", action="store_true", help="Run alembic migration"
+    )
+
+    args = parser.parse_args()
+
+    try:
+        if args.create:
             ret = DBManager.check_and_autocreate()
-        elif cmd == "-r":
+        elif args.reset:
             ret = DBManager.reset_database()
-        elif cmd == "-d":
+        elif args.delete:
             ret = DBManager.remove_database()
+        elif args.migrate:
+            ret = DBManager.make_and_run_migrate()
         else:
-            ret = "cmd error!"
-    else:
-        ret = DBManager.check_and_autocreate()
+            ret = "No command specified. Use -h for help."
+    except Exception as e:
+        ret = f"Error occurred: {str(e)}"
+
     print(ret)

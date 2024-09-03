@@ -2,4 +2,7 @@
 from models.base import Base
 
 # 导入 models
-from app_user.model import *
+from apps.app_user.model import User
+
+
+__all__ = ["Base", "User"]

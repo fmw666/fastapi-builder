@@ -1,13 +1,15 @@
 from starlette.middleware.base import BaseHTTPMiddleware
-from core.logger import logger
+from core.logger import app_logger as logger
 
 
-# 自定义访问日志中间件，基于BaseHTTPMiddleware的中间件实例
 class RequestLoggerMiddleware(BaseHTTPMiddleware):
+    """自定义访问日志中间件，基于BaseHTTPMiddleware的中间件实例"""
 
-    # dispatch 必须实现
     async def dispatch(self, request, call_next):
-        logger.info(f"{request.method} url:{request.url}\nheaders: {request.headers.get('user-agent')}"
-                f"\nIP:{request.client.host}")
+        """必须重载 dispatch 方法"""
+        logger.info(
+            f"{request.method} url:{request.url}\nheaders: {request.headers.get('user-agent')}"
+            f"\nIP:{request.client.host}"
+        )
         response = await call_next(request)
         return response

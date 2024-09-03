@@ -1,16 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from sqlalchemy.orm.session import Session
-from starlette.status import HTTP_400_BAD_REQUEST
+from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
+from apps.app_user import doc
+from apps.app_user.schema import (
+    UserLoginRequest,
+    UserLoginResponse,
+    UserLoginResponseModel,
+    UserRegisterRequest,
+    UserRegisterResponse,
+    UserRegisterResponseModel,
+)
+from apps.app_user.model import User
+from core.e import ErrorCode, ErrorMessage
 from db.errors import EntityDoesNotExist
-from db.database import get_db
-from app_user.schema import UserCreate
-from app_user.model import User
+from db.database import get_async_db
 
-from utils import consts
 from lib.jwt import create_access_token, get_current_user
-from lib.security import OAuth2Form
 
 
 router = APIRouter()
@@ -22,66 +29,106 @@ router = APIRouter()
 POST   /api/auth/login      ->  login    ->  用户登录
 POST   /api/auth/register   ->  register ->  用户注册
 GET    /api/auth/test       ->  test     ->  token 测试
+POST   /api/auth/token      ->  token    ->  token 认证
 """
 
-# 用户登录
-@router.post("/login", name="用户登录")
-async def login(form_data: OAuth2Form = Depends(), db: Session = Depends(get_db)):
-    wrong_login_error = HTTPException(
-        status_code=HTTP_400_BAD_REQUEST,
-        detail=consts.INCORRECT_LOGIN_INPUT,
+
+@router.post(
+    "/login",
+    name="用户登录",
+    response_model=UserLoginResponseModel,
+    responses=doc.login_responses,
+)
+async def login(
+    login_request: UserLoginRequest = Body(..., openapi_examples=doc.login_request),
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_user: User | None = await User.get_by(db, username=login_request.username)
+    if not db_user:
+        return UserLoginResponseModel(
+            code=ErrorCode.USER_NOT_FOUND,
+            message=ErrorMessage.get(ErrorCode.USER_NOT_FOUND),
+        ).to_json(status_code=HTTP_404_NOT_FOUND)
+
+    if not db_user.check_password(login_request.password):
+        return UserLoginResponseModel(
+            code=ErrorCode.USER_PASSWORD_ERROR,
+            message=ErrorMessage.get(ErrorCode.USER_PASSWORD_ERROR),
+        ).to_json(HTTP_400_BAD_REQUEST)
+
+    # 返回中必包含 "token_type": "bearer", "access_token": "xxxtokenxxx"
+    return UserLoginResponseModel(
+        data=UserLoginResponse(
+            id=db_user.id,
+            username=db_user.username,
+            email=db_user.email,
+            token_type="bearer",
+            access_token=create_access_token(db_user.id),
+        )
     )
 
-    user = User.get_by(db, username=form_data.username)
-    if not user:
-        raise wrong_login_error from EntityDoesNotExist
 
-    if not user.check_password(form_data.password):
-        raise wrong_login_error
-    
-    # 返回中必包含 "token_type": "bearer", "access_token": "xxxtokenxxx"
-    return {"id": user.id, "name": user.username, "token_type": "bearer", "access_token": create_access_token(user.id)}
+@router.post(
+    "/register",
+    name="用户注册",
+    response_model=UserRegisterResponseModel,
+    responses=doc.register_responses,
+)
+async def register(
+    user: UserRegisterRequest = Body(..., openapi_examples=doc.register_request),
+    db: AsyncSession = Depends(get_async_db),
+):
+    async with db.begin():
+        db_user: User | None = await User.get_by(db, username=user.username)
+        if db_user:
+            return UserRegisterResponseModel(
+                code=ErrorCode.USER_NAME_EXIST,
+                message=ErrorMessage.get(ErrorCode.USER_NAME_EXIST),
+            ).to_json(status_code=HTTP_400_BAD_REQUEST)
+        db_user: User | None = await User.get_by(db, email=user.email)
+        if db_user:
+            return UserRegisterResponseModel(
+                code=ErrorCode.USER_EMAIL_EXIST,
+                message=ErrorMessage.get(ErrorCode.USER_EMAIL_EXIST),
+            ).to_json(status_code=HTTP_400_BAD_REQUEST)
 
-
-# 用户注册
-@router.post("/register", name="用户注册")
-async def register(user: UserCreate, db: Session = Depends(get_db)):
-    # 判断数据库是否存在
-    if User.get_by(db, username=user.username):
-        raise HTTPException(
-            status_code=404,
-            detail="用户已存在"
-        )
-
-    db_user = User(**user.dict())
-    db_user.change_password(user.password)
-    db_user.save(db)
-    return db_user
+        db_user = await User.create(db, **user.model_dump())
+        db_user.change_password(user.password)
+        await db_user.save(db)
+    return UserRegisterResponseModel(
+        data=UserRegisterResponse.model_validate(db_user, from_attributes=True)
+    )
 
 
 """以下接口只针对 Swagger UI 接口文档做测试，实际开发环境中不会存在"""
 
-# 测试 token 的接口
-@router.get("/test", name="基于 token 身份认证测试")
+
+@router.get("/test", name="（仅用作 Swagger UI 调试）基于 token 身份认证测试")
 async def test(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-# docs 身份认证表单接口（仅做测试）
-@router.post("/token", name="文档身份认证接口")
-async def token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # 使用 OAuth2PasswordRequestForm 才能正常登录
+@router.post("/token", name="（仅用作 Swagger UI 调试）文档身份认证接口")
+async def token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_async_db),
+):
     wrong_login_error = HTTPException(
         status_code=HTTP_400_BAD_REQUEST,
-        detail=consts.INCORRECT_LOGIN_INPUT,
+        detail=f"{HTTP_400_BAD_REQUEST}_token error",
     )
 
-    user = User.get_by(db, username=form_data.username)
-    if not user:
+    db_user: User | None = await User.get_by(db, username=form_data.username)
+    if not db_user:
         raise wrong_login_error from EntityDoesNotExist
 
-    if not user.check_password(form_data.password):
+    if not db_user.check_password(form_data.password):
         raise wrong_login_error
-    
+
     # 返回中必包含 "token_type": "bearer", "access_token": "xxxtokenxxx"
-    return {"id": user.id, "name": user.username, "token_type": "bearer", "access_token": create_access_token(user.id)}
+    return {
+        "id": db_user.id,
+        "name": db_user.username,
+        "token_type": "bearer",
+        "access_token": create_access_token(db_user.id),
+    }

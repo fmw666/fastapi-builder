@@ -1,11 +1,16 @@
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import Session
-from sqlalchemy import Column, Integer
+from typing import Generic, List, Type, TypeVar, Union
 
-from db.database import SessionLocal
+from sqlalchemy import Column, Integer, Select, delete, inspect, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.orm import ColumnProperty
+
+
+T = TypeVar("T", bound="Base")
+
 
 @as_declarative()
-class Base(object):
+class Base(Generic[T]):
 
     # 默认表名
     @declared_attr
@@ -18,63 +23,64 @@ class Base(object):
 
     # 打印实例返回值
     def __repr__(self) -> str:
-        values = ", ".join("%s=%r" % (n, getattr(self, n)) for n in self.__table__.c.keys())
-        return "%s(%s)" % (self.__class__.__name__, values)
+        values = ", ".join(
+            f"{n}={repr(getattr(self, n))}" for n in self.__table__.c.keys()
+        )
+        return f"{self.__class__.__name__}({values})"
 
     # 自定义方法
     @classmethod
-    def query(cls, db: Session = SessionLocal()):
-        return db.query(cls).filter_by(deleted=False) if hasattr(cls, "deleted") else db.query(cls)
+    async def query(cls) -> Select[T]:
+        return (
+            select(cls).where(cls.deleted_at.is_(None))
+            if hasattr(cls, "deleted_at")
+            else select(cls)
+        )
 
     @classmethod
-    def create(cls, db: Session = SessionLocal(), **kw):
+    async def create(cls, db: AsyncSession, **kw) -> T:
         obj = cls(**kw)
         db.add(obj)
-        db.commit()
-        db.refresh(obj)
         return obj
 
-    def save(self, db: Session = SessionLocal()):
+    async def save(self, db: AsyncSession) -> None:
         db.add(self)
-        db.commit()
-        db.refresh(self)
 
     @classmethod
-    def get_by(cls, db: Session = SessionLocal(), **kw):
-        return cls.query(db).filter_by(**kw).first()
+    async def get_by(cls, db: AsyncSession, **kw) -> T | None:
+        stmt = await cls.query()
+        result = await db.execute(stmt.filter_by(**kw))
+        return result.scalars().first()
 
     @classmethod
-    def get_or_create(cls, db: Session = SessionLocal(), **kw):
-        obj = cls.get_by(db, **kw)
+    async def get_or_create(cls, db: AsyncSession, **kw) -> T:
+        obj = await cls.get_by(db, **kw)
         if not obj:
-            obj = cls.create(db, **kw)
+            obj = await cls.create(db, **kw)
         return obj
 
     @classmethod
-    def get_or_404(cls, db: Session = SessionLocal(), **kw):
-        obj = cls.get_by(db, **kw)
-        if not obj:
-            return 404
-        return obj
+    async def all(cls, db: AsyncSession, /) -> List[T]:
+        stmt = await cls.query()
+        return (await db.execute(stmt)).scalars().all()
 
     @classmethod
-    def filter_by(cls, db: Session = SessionLocal(), **kw):
-        return cls.query(db).filter_by(**kw).all()
+    async def delete_by(cls, db: AsyncSession, /, **kw) -> None:
+        stmt = delete(cls).filter_by(**kw)
+        await db.execute(stmt)
 
-    @classmethod
-    def all(cls, db: Session = SessionLocal(), /):
-        return cls.query(db).all()
+    async def delete(self, db: AsyncSession, /) -> None:
+        await db.delete(self)
+        await db.commit()
 
-    @classmethod
-    def update_by(cls, db: Session = SessionLocal(), /, *, user_id: int, update_fields: dict):
-        cls.query(db).filter_by(id=user_id).update(update_fields)
-        db.commit()
 
-    @classmethod
-    def delete_by(cls, db: Session = SessionLocal(), /, *, user_id: int):
-        cls.query(db).filter_by(id=user_id).delete(synchronize_session=False)
-        db.commit()
-
-    def delete(self, db: Session = SessionLocal(), /):
-        db.delete(self)
-        db.commit()
+def get_model_fields_from_objects(
+    model: Type, fields: List[Union[ColumnProperty]] | None = None
+) -> List[str]:
+    """从 SQLAlchemy 模型字段对象中提取字段名"""
+    mapper = inspect(model)
+    if fields is None:
+        field_names = [column.name for column in mapper.columns]
+    else:
+        field_names = [column.name for column in mapper.columns if column in fields]
+    return field_names

@@ -94,20 +94,26 @@ project
 │   ├── routes/                   - web routes 路由.
 │   │   ├── api.py                - 总路由接口
 │   │   └── authentication.py     - 认证相关（登录、注册）路由
-├── app_user/                     - user 应用.
-│   ├── api.py                    - 提供 user 接口方法
-│   ├── model.py                  - 提供 user 表模型
-│   ├── schema.py                 - 提供 user 结构模型
+├── apps/                         - 子应用.
+│   ├── app_user/                 - user 应用.
+│   │   ├── api.py                - 提供 user 接口方法
+│   │   ├── doc.py                - 提供 user Swagger UI 文档
+│   │   ├── field.py              - 提供 user pydantic 验证字段
+│   │   ├── model.py              - 提供 user 表模型
+│   │   └── schema.py             - 提供 user pydantic 结构模型
 ├── core/                         - 项目核心配置, 如: 配置文件, 事件句柄, 日志.
+│   ├── e/                        - 错误处理包.
+│   │   ├── __init__.py
+│   │   ├── codes.py              - 错误码定义
+│   │   └── messages.py           - 错误消息定义
 │   ├── .env                      - 配置文件.
 │   ├── config.py                 - 解析配置文件, 用于其他文件读取配置.
 │   ├── events.py                 - 定义 fastapi 事件句柄.
 │   ├── logger.py                 - 定义项目日志方法.
 ├── db/                           - 数据库相关.
 │   ├── base.py                   - 导入所有应用 model.
-│   └── database.py               - sqlalchemy 方法应用.
+│   ├── database.py               - sqlalchemy 方法应用.
 │   ├── errors.py                 - 数据库相关错误异常.
-│   ├── events.py                 - 数据库相关事件句柄.
 ├── lib/                          - 自定义库
 │   ├── jwt.py                    - 用户认证 jwt 方法.
 │   ├── security.py               - 加密相关方法.
@@ -116,13 +122,12 @@ project
 │   ├── logger.py                 - 请求日志处理.
 ├── models/                       - sqlalchemy 基础模型相关
 │   ├── base.py                   - sqlalchemy declarative Base 表模型.
-│   └── mixins.py                 - mixin 抽象模型定义.
+│   ├── mixins.py                 - mixin 抽象模型定义.
 ├── schemas/                      - pydantic 结构模型相关.
-│   ├── auth.py                   - 用户认证相关结构模型.
-│   └── base.py                   - pydantic 结构模型基础类.
+│   ├── base.py                   - pydantic 结构模型基础类.
 │   ├── jwt.py                    - jwt 相关结构模型.
+│   ├── response.py               - 响应模型封装.
 ├── utils/                        - 工具类.
-│   ├── consts.py                 - 项目常量定义.
 │   ├── dbmanager.py              - 数据库管理服务.
 │   ├── docs.py                   - fastapi docs 文档自定义.
 {% if cookiecutter.pre_commit == "True" -%}
