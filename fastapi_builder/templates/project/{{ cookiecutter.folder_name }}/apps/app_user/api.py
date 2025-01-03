@@ -55,11 +55,11 @@ DELETE /api/users/{user_id}  ->  delete_user  ->  注销单个用户
     name="获取用户列表",
     response_model=UserListResponseModel,
     responses=doc.get_users_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def get_users(
     query_params: UserListQueryRequest = Depends(),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     # 获取总数
     total_count = (await db.execute(select(func.count()).select_from(User))).scalar()
@@ -99,11 +99,11 @@ async def get_users(
     name="创建单个用户",
     response_model=UserCreateResponseModel,
     responses=doc.create_user_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def create_user(
     user: UserCreateRequest = Body(..., openapi_examples=doc.create_user_request),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     async with db.begin():
         # 参数检查
@@ -128,13 +128,13 @@ async def create_user(
     name="批量更新用户",
     response_model=UsersPatchResponseModel,
     responses=doc.patch_users_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def patch_users(
     users_patch_request: UsersPatchRequest = Body(
         ..., openapi_examples=doc.patch_users_request
     ),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     async with db.begin():
         stmt = (await User.query()).filter(User.id.in_(users_patch_request.ids))
@@ -155,6 +155,7 @@ async def patch_users(
     name="批量注销用户",
     response_model=UsersDeleteResponseModel,
     responses=doc.delete_users_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def delete_users(
     ids: List[int] = Body(
@@ -164,7 +165,6 @@ async def delete_users(
         json_schema_extra=doc.delete_users_request,
     ),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     async with db.begin():
         stmt_select = (await User.query()).filter(User.id.in_(ids))
@@ -184,11 +184,11 @@ async def delete_users(
     name="查询用户 by user_id",
     response_model=UserInfoResponseModel,
     responses=doc.get_user_by_id_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def get_user_by_id(
     user_id: int = Path(..., description="用户 id", ge=1, example=1),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     db_user: User | None = await User.get_by(db, id=user_id)
     if db_user is None:
@@ -207,6 +207,7 @@ async def get_user_by_id(
     name="更改用户 by user_id",
     response_model=UserUpdateResponseModel,
     responses=doc.update_user_by_id_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def update_user_by_id(
     user_id: int = Path(..., ge=1),
@@ -214,7 +215,6 @@ async def update_user_by_id(
         ..., openapi_examples=doc.update_user_by_id_request
     ),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     async with db.begin():
         db_user: User | None = await User.get_by(db, id=user_id)
@@ -255,11 +255,11 @@ async def update_user_by_id(
     name="注销用户 by user_id",
     response_model=UserDeleteResponseModel,
     responses=doc.delete_user_by_id_responses,
+    dependencies=[Depends(get_current_user)],
 )
 async def delete_user_by_id(
     user_id: int = Path(..., ge=1),
     db: AsyncSession = Depends(get_async_db),
-    _: User = Depends(get_current_user),
 ):
     async with db.begin():
         db_user: User | None = await User.get_by(db, id=user_id)
