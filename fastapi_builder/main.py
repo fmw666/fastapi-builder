@@ -1,11 +1,10 @@
 import os
 import subprocess
 import platform
-from typing import Optional
-
 import pkg_resources
 import typer
-from questionary.form import form
+
+from typing import Optional
 
 from fastapi_builder.constants import (
     Database,
@@ -29,6 +28,13 @@ from fastapi_builder.utils import (
     config_app,
     set_config_file_content,
 )
+from questionary.form import form
+
+import sys
+import io
+
+# 强制设置标准输出为 UTF-8 编码
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
 app = typer.Typer(
