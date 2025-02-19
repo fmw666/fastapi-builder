@@ -1,8 +1,12 @@
+from typing import Dict, Literal, TypeAlias
 from core.e.codes import ErrorCode
 
 
+LANGUAGE_TYPE: TypeAlias = Literal["en", "zh"]
+
+
 class ErrorMessage:
-    _messages = {
+    _messages: Dict[LANGUAGE_TYPE, Dict[ErrorCode, str]] = {
         "en": {
             # 通用错误
             ErrorCode.INTERNAL_SERVER_ERROR: "Internal Server Error",
@@ -30,5 +34,5 @@ class ErrorMessage:
     }
 
     @classmethod
-    def get(cls, code: int, lang="en"):
+    def get(cls, code: int, lang: LANGUAGE_TYPE = "en"):
         return cls._messages[lang].get(code, "Unknown error code.")

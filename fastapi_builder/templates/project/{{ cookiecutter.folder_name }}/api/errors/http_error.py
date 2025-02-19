@@ -7,10 +7,17 @@ from schemas.response import StandardResponse
 
 async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
     """
-    http 异常处理句柄. 包含返回内容、状态码、响应头
-    :param _: 请求对象
-    :param exc: 异常对象
-    :return: JSONResponse
+    fastapi http 异常处理句柄. 包含返回内容、状态码、响应头
+
+    Args:
+        _ (Request): starlette.requests.Request
+        exc (HTTPException): 响应异常
+
+    Returns:
+        JSONResponse: 返回内容、状态码、响应头
+
+    Raises:
+        ValueError: 消息处理失败，抛出 ValueError 异常
     """
     try:
         code, message = exc.detail.split("_", 1)

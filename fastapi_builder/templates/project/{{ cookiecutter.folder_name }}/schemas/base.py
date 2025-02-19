@@ -1,10 +1,11 @@
 import re
-import datetime
 
+from datetime import datetime, timezone
 from enum import Enum
+from typing import Annotated
 
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, PlainSerializer
 
 
 def convert_datetime(dt: datetime.datetime) -> str:
@@ -39,19 +40,20 @@ def convert_field_to_snake_case(string: str) -> str:
     return snake_case.lower().strip("_")
 
 
+# 自定义 datetime 响应类型
+CustomDatetime = Annotated[datetime, PlainSerializer(convert_datetime)]
+
+
 class BaseSchema(BaseModel):
     """自定义基础 schema 类"""
+
+    model_config = ConfigDict(populate_by_name=True, alias_generator=convert_field_to_snake_case)
 
     def model_dump_json(self, force_by_alias: bool = True, **kwargs):
         """重写 model_dump_json 方法, 默认不转换 alias"""
         if not force_by_alias:
             return super().model_dump_json(**kwargs)
         return super().model_dump_json(by_alias=True, **kwargs)
-
-    class Config(ConfigDict):
-        populate_by_name = True
-        json_encoders = {datetime.datetime: convert_datetime}
-        alias_generator = convert_field_to_snake_case
 
 
 class OrderType(str, Enum):

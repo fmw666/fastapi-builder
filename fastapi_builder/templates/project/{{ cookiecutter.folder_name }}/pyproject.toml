@@ -1,12 +1,17 @@
+[tool.black]
+line-length = 100
+skip-string-normalization = true
+
 [tool.poetry]
 name = "{{ cookiecutter.name }}"
 version = "0.1.0"
 description = ""
+readme = "README.md"
 {% if cookiecutter.username != None %}authors = ["{{ cookiecutter.username }} <{{ cookiecutter.email }}>"]{% endif %}
 
 [tool.poetry.dependencies]
 python = "^{{ cookiecutter.python }}"
-fastapi = "^{{ cookiecutter.fastapi }}"
+fastapi = "{{ cookiecutter.fastapi }}"
 aiomysql = "^0.2.0"
 alembic = "^1.13.2"
 bcrypt = "^4.2.0"
@@ -14,7 +19,6 @@ databases = "^0.9.0"
 email-validator = "^2.2.0"
 loguru = "^0.7.2"
 passlib = "^1.7.4"
-pydantic = "^2.8.2"
 pymysql = "^1.1.1"
 python-jose = "^3.3.0"
 python-multipart = "^0.0.9"

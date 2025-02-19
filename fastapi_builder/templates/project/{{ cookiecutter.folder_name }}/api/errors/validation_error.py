@@ -16,9 +16,13 @@ async def http422_error_handler(
 ) -> JSONResponse:
     """
     Custom error handler for 422 status code
-    :param _: Request
-    :param exc: Union[RequestValidationError, ValidationError]
-    :return: JSONResponse
+
+    Args:
+        _ (Request): starlette.requests.Request
+        exc (Union[RequestValidationError, ValidationError, ValueError]): 响应异常
+
+    Returns:
+        JSONResponse: 返回内容、状态码、响应头
     """
     if isinstance(exc, ValueError):
         errors = [

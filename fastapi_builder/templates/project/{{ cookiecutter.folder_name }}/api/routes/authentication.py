@@ -3,20 +3,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from apps.app_user import doc
-from apps.app_user.schema import (
-    UserLoginRequest,
-    UserLoginResponse,
-    UserLoginResponseModel,
-    UserRegisterRequest,
-    UserRegisterResponse,
-    UserRegisterResponseModel,
-)
-from apps.app_user.model import User
+from apps.app_user import doc, model, schema
 from core.e import ErrorCode, ErrorMessage
 from db.errors import EntityDoesNotExist
 from db.database import get_async_db
-
 from lib.jwt import create_access_token, get_current_user
 
 
@@ -36,29 +26,29 @@ POST   /api/auth/token      ->  token    ->  token 认证
 @router.post(
     "/login",
     name="用户登录",
-    response_model=UserLoginResponseModel,
+    response_model=schema.UserLoginResponseModel,
     responses=doc.login_responses,
 )
 async def login(
-    login_request: UserLoginRequest = Body(..., openapi_examples=doc.login_request),
+    login_request: schema.UserLoginRequest = Body(..., openapi_examples=doc.login_request),
     db: AsyncSession = Depends(get_async_db),
 ):
-    db_user: User | None = await User.get_by(db, username=login_request.username)
+    db_user: model.User | None = await model.User.get_by(db, username=login_request.username)
     if not db_user:
-        return UserLoginResponseModel(
+        return schema.UserLoginResponseModel(
             code=ErrorCode.USER_NOT_FOUND,
             message=ErrorMessage.get(ErrorCode.USER_NOT_FOUND),
         ).to_json(status_code=HTTP_404_NOT_FOUND)
 
     if not db_user.check_password(login_request.password):
-        return UserLoginResponseModel(
+        return schema.UserLoginResponseModel(
             code=ErrorCode.USER_PASSWORD_ERROR,
             message=ErrorMessage.get(ErrorCode.USER_PASSWORD_ERROR),
         ).to_json(HTTP_400_BAD_REQUEST)
 
     # 返回中必包含 "token_type": "bearer", "access_token": "xxxtokenxxx"
-    return UserLoginResponseModel(
-        data=UserLoginResponse(
+    return schema.UserLoginResponseModel(
+        data=schema.UserLoginResponse(
             id=db_user.id,
             username=db_user.username,
             email=db_user.email,
@@ -71,32 +61,32 @@ async def login(
 @router.post(
     "/register",
     name="用户注册",
-    response_model=UserRegisterResponseModel,
+    response_model=schema.UserRegisterResponseModel,
     responses=doc.register_responses,
 )
 async def register(
-    user: UserRegisterRequest = Body(..., openapi_examples=doc.register_request),
+    user: schema.UserRegisterRequest = Body(..., openapi_examples=doc.register_request),
     db: AsyncSession = Depends(get_async_db),
 ):
     async with db.begin():
-        db_user: User | None = await User.get_by(db, username=user.username)
+        db_user: model.User | None = await model.User.get_by(db, username=user.username)
         if db_user:
-            return UserRegisterResponseModel(
+            return schema.UserRegisterResponseModel(
                 code=ErrorCode.USER_NAME_EXIST,
                 message=ErrorMessage.get(ErrorCode.USER_NAME_EXIST),
             ).to_json(status_code=HTTP_400_BAD_REQUEST)
-        db_user: User | None = await User.get_by(db, email=user.email)
+        db_user: model.User | None = await model.User.get_by(db, email=user.email)
         if db_user:
-            return UserRegisterResponseModel(
+            return schema.UserRegisterResponseModel(
                 code=ErrorCode.USER_EMAIL_EXIST,
                 message=ErrorMessage.get(ErrorCode.USER_EMAIL_EXIST),
             ).to_json(status_code=HTTP_400_BAD_REQUEST)
 
-        db_user = await User.create(db, **user.model_dump())
+        db_user = await model.User.create(db, **user.model_dump())
         db_user.change_password(user.password)
         await db_user.save(db)
-    return UserRegisterResponseModel(
-        data=UserRegisterResponse.model_validate(db_user, from_attributes=True)
+    return schema.UserRegisterResponseModel(
+        data=schema.UserRegisterResponse.model_validate(db_user, from_attributes=True)
     )
 
 
@@ -104,7 +94,7 @@ async def register(
 
 
 @router.get("/test", name="（仅用作 Swagger UI 调试）基于 token 身份认证测试")
-async def test(current_user: User = Depends(get_current_user)):
+async def test(current_user: model.User = Depends(get_current_user)):
     return current_user
 
 
@@ -118,7 +108,7 @@ async def token(
         detail=f"{HTTP_400_BAD_REQUEST}_token error",
     )
 
-    db_user: User | None = await User.get_by(db, username=form_data.username)
+    db_user: model.User | None = await model.User.get_by(db, username=form_data.username)
     if not db_user:
         raise wrong_login_error from EntityDoesNotExist
 

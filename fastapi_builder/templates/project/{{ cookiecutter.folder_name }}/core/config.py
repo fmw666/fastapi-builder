@@ -1,18 +1,27 @@
 import os
 import secrets
-import typing
+
+from typing import Dict, List, Union
+
 from pathlib import Path
 from databases import DatabaseURL
 
 from starlette.config import Config
-from starlette.datastructures import Secret
+from starlette.datastructures import CommaSeparatedStrings, Secret
+
+
+class CommaSeparatedStrings(CommaSeparatedStrings):
+
+    def __eq__(self, value: object) -> bool:
+        """重载 eq 方法，基于 _items 作比较"""
+        return self._items == value
 
 
 class ConfigParser(Config):
     """重载 Config _read_file 方法，使其支持文件中文问题"""
 
-    def _read_file(self, file_name: typing.Union[str, Path]) -> typing.Dict[str, str]:
-        file_values: typing.Dict[str, str] = {}
+    def _read_file(self, file_name: Union[str, Path]) -> Dict[str, str]:
+        file_values: Dict[str, str] = {}
         with open(file_name, encoding="utf-8") as input_file:
             for line in input_file.readlines():
                 line = line.strip()
@@ -48,6 +57,9 @@ class Settings(object):
         "PROJECT_NAME", cast=str, default="FastAPI example application"
     )
     VERSION: str = config("VERSION", cast=str, default="1.0.0")
+
+    # authentication
+    USER_BLACKLIST: List[str] = config("USER_BLACKLIST", cast=CommaSeparatedStrings, default=[])
 
     # token
     JWT_TOKEN_PREFIX: str = config(
