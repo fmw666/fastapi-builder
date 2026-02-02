@@ -31,7 +31,7 @@ def test_startapp_already_exists(tmp_path: Path):
 
 CURRENT_PATH = "."
 
-test_startapp_default(CURRENT_PATH)
-test_startapp_already_exists(CURRENT_PATH)
+test_startapp_default(Path(CURRENT_PATH))
+test_startapp_already_exists(Path(CURRENT_PATH))
 
 rm_tmp_dir(CURRENT_PATH)

@@ -17,10 +17,10 @@ from fastapi_builder.helpers import camel_to_pascal, snake_to_camel
 
 class AppContext(BaseModel):
     name: str
-    folder_name: str
-    snake_name: str
-    camel_name: str
-    pascal_name: str
+    folder_name: str = ""
+    snake_name: str = ""
+    camel_name: str = ""
+    pascal_name: str = ""
     language: Optional[Language]
 
     @root_validator(pre=True)
@@ -38,7 +38,7 @@ class AppContext(BaseModel):
 
 class ProjectContext(BaseModel):
     name: str
-    folder_name: str
+    folder_name: str = ""
 
     language: Optional[Language]
     packaging: PackageManager
@@ -50,7 +50,7 @@ class ProjectContext(BaseModel):
     fastapi: str = FASTAPI_VERSION
 
     license: Optional[License]
-    year: int
+    year: int = 0
 
     pre_commit: bool
     docker: bool

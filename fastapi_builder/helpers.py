@@ -1,9 +1,10 @@
 import re
-from typing import TypeVar
+from enum import Enum
+from typing import Type, TypeVar
 
 import questionary
 
-EnumType = TypeVar("EnumType")
+EnumType = TypeVar("EnumType", bound=Enum)
 
 
 def camel_to_snake(text: str) -> str:
@@ -21,7 +22,7 @@ def camel_to_pascal(text: str) -> str:
     return text[0].upper() + text[1:]
 
 
-def question(choices: EnumType) -> questionary.Question:
+def question(choices: Type[EnumType]) -> questionary.Question:
     prompt = camel_to_snake(choices.__name__).replace("_", " ")
     return questionary.select(
         f"Select the {prompt}: ", choices=[c.value for c in choices]

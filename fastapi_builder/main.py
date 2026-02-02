@@ -5,7 +5,7 @@ import subprocess
 import sys
 from typing import Optional
 
-import pkg_resources
+import pkg_resources  # type: ignore
 import typer
 from questionary.form import form
 
@@ -104,7 +104,7 @@ def startapp(
 
     context = AppContext(
         name=name,
-        language=language,
+        language=Language(language),
     )
 
     generate_app(context, output_dir)
@@ -167,7 +167,7 @@ def db(
 
     if cmd == DBCmd.MAKEMIGRATIONS:
         subprocess.call(
-            ["alembic", "revision", "--autogenerate", "-m", migration_message]
+            ["alembic", "revision", "--autogenerate", "-m", migration_message or ""]
         )
     elif cmd == DBCmd.MIGRATE:
         subprocess.call(["alembic", "upgrade", "head"])
