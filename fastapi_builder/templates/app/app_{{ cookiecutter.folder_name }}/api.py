@@ -1,7 +1,6 @@
-import datetime
 from typing import List
+
 from fastapi import APIRouter, Body, Depends, Path
-from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_404_NOT_FOUND
 
@@ -26,10 +25,9 @@ from apps.app_{{ cookiecutter.folder_name }}.schema import (
     {{ cookiecutter.pascal_name }}sPatchResponse,
     {{ cookiecutter.pascal_name }}sPatchResponseModel,
 )
-from apps.app_{{ cookiecutter.folder_name }}.model import {{ cookiecutter.pascal_name }}
+from apps.app_{{ cookiecutter.folder_name }}.service import {{ cookiecutter.pascal_name }}Service
 from core.e import ErrorCode, ErrorMessage
 from db.database import get_async_db
-from schemas.base import OrderType
 from schemas.response import PaginationResponse
 
 
@@ -59,32 +57,18 @@ async def get_{{ cookiecutter.snake_name }}s(
     query_params: {{ cookiecutter.pascal_name }}ListQueryRequest = Depends(),
     db: AsyncSession = Depends(get_async_db),
 ):
-    # 获取总数
-    total_count = (await db.execute(select(func.count()).select_from({{ cookiecutter.pascal_name }}))).scalar()
-
-    # 查询
-    stmt = await {{ cookiecutter.pascal_name }}.query()
-    if query_params.size is not None:
-        offset = (query_params.page - 1) * query_params.size
-        stmt = stmt.offset(offset).limit(query_params.size)
-    if query_params.order_type:
-        stmt = stmt.order_by(
-            getattr({{ cookiecutter.pascal_name }}, query_params.order_by).desc()
-            if query_params.order_type == OrderType.DESC
-            else getattr({{ cookiecutter.pascal_name }}, query_params.order_by).asc()
-        )
-
-    db_{{ cookiecutter.snake_name }}s: List[{{ cookiecutter.pascal_name }}] = (await db.execute(stmt)).scalars().all()
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    data, total_count = await service.get_list(query_params)
 
     return {{ cookiecutter.pascal_name }}ListResponseModel(
         data=PaginationResponse(
             list=[
                 {{ cookiecutter.pascal_name }}ListResponse.model_validate(
-                    db_{{ cookiecutter.snake_name }}, from_attributes=True
+                    item, from_attributes=True
                 ).model_dump()
-                for db_{{ cookiecutter.snake_name }} in db_{{ cookiecutter.snake_name }}s
+                for item in data
             ],
-            count=len(db_{{ cookiecutter.snake_name }}s),
+            count=len(data),
             page=query_params.page,
             size=query_params.size,
             total=total_count,
@@ -104,8 +88,8 @@ async def create_{{ cookiecutter.snake_name }}(
     ),
     db: AsyncSession = Depends(get_async_db),
 ):
-    async with db.begin():
-        db_{{ cookiecutter.snake_name }}: {{ cookiecutter.pascal_name }} = await {{ cookiecutter.pascal_name }}.create(db, **{{ cookiecutter.snake_name }}.model_dump())
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    db_{{ cookiecutter.snake_name }} = await service.create({{ cookiecutter.snake_name }})
     return {{ cookiecutter.pascal_name }}CreateResponseModel(
         data={{ cookiecutter.pascal_name }}CreateResponse.model_validate(db_{{ cookiecutter.snake_name }}, from_attributes=True)
     )
@@ -123,17 +107,11 @@ async def patch_{{ cookiecutter.snake_name }}s(
     ),
     db: AsyncSession = Depends(get_async_db),
 ):
-    async with db.begin():
-        stmt = (await {{ cookiecutter.pascal_name }}.query()).filter(
-            {{ cookiecutter.pascal_name }}.id.in_({{ cookiecutter.snake_name }}s_patch_request.ids)
-        )
-        db_{{ cookiecutter.snake_name }}s: List[{{ cookiecutter.pascal_name }}] = (await db.execute(stmt)).scalars().all()
-        for db_{{ cookiecutter.snake_name }} in db_{{ cookiecutter.snake_name }}s:
-            db_{{ cookiecutter.snake_name }}.name = {{ cookiecutter.snake_name }}s_patch_request.name
-        db.flush()
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    db_{{ cookiecutter.snake_name }}s = await service.patch_batch({{ cookiecutter.snake_name }}s_patch_request)
     return {{ cookiecutter.pascal_name }}sPatchResponseModel(
         data={{ cookiecutter.pascal_name }}sPatchResponse(
-            ids=[db_{{ cookiecutter.snake_name }}.id for db_{{ cookiecutter.snake_name }} in db_{{ cookiecutter.snake_name }}s],
+            ids=[item.id for item in db_{{ cookiecutter.snake_name }}s],
             name={{ cookiecutter.snake_name }}s_patch_request.name,
         )
     )
@@ -154,20 +132,11 @@ async def delete_{{ cookiecutter.snake_name }}s(
     ),
     db: AsyncSession = Depends(get_async_db),
 ):
-    async with db.begin():
-        stmt_select = (await {{ cookiecutter.pascal_name }}.query()).filter({{ cookiecutter.pascal_name }}.id.in_(ids))
-        db_{{ cookiecutter.snake_name }}s: List[{{ cookiecutter.pascal_name }}] = (await db.execute(stmt_select)).scalars().all()
-
-        stmt_update = (
-            update({{ cookiecutter.pascal_name }})
-            .where({{ cookiecutter.pascal_name }}.deleted_at.is_(None))
-            .filter({{ cookiecutter.pascal_name }}.id.in_(ids))
-            .values(deleted_at=datetime.datetime.now())
-        )
-        await db.execute(stmt_update)
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    db_{{ cookiecutter.snake_name }}s = await service.delete_batch(ids)
     return {{ cookiecutter.pascal_name }}sDeleteResponseModel(
         data={{ cookiecutter.pascal_name }}sDeleteResponse(
-            ids=[db_{{ cookiecutter.snake_name }}.id for db_{{ cookiecutter.snake_name }} in db_{{ cookiecutter.snake_name }}s]
+            ids=[item.id for item in db_{{ cookiecutter.snake_name }}s]
         )
     )
 
@@ -182,7 +151,8 @@ async def get_{{ cookiecutter.snake_name }}_by_id(
     {{ cookiecutter.snake_name }}_id: int = Path(..., description="{{ cookiecutter.snake_name }} id", ge=1, example=1),
     db: AsyncSession = Depends(get_async_db),
 ):
-    db_{{ cookiecutter.snake_name }}: {{ cookiecutter.pascal_name }} | None = await {{ cookiecutter.pascal_name }}.get_by(db, id={{ cookiecutter.snake_name }}_id)
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    db_{{ cookiecutter.snake_name }} = await service.get_by_id({{ cookiecutter.snake_name }}_id)
     if db_{{ cookiecutter.snake_name }} is None:
         return {{ cookiecutter.pascal_name }}InfoResponseModel(
             code=ErrorCode.NOT_FOUND,
@@ -207,19 +177,14 @@ async def update_{{ cookiecutter.snake_name }}_by_id(
     ),
     db: AsyncSession = Depends(get_async_db),
 ):
-    async with db.begin():
-        db_{{ cookiecutter.snake_name }}: {{ cookiecutter.pascal_name }} | None = await {{ cookiecutter.pascal_name }}.get_by(db, id={{ cookiecutter.snake_name }}_id)
-        if db_{{ cookiecutter.snake_name }} is None:
-            return {{ cookiecutter.pascal_name }}UpdateResponseModel(
-                code=ErrorCode.NOT_FOUND,
-                message=ErrorMessage.get(ErrorCode.NOT_FOUND),
-            )
-
-        # 更新 name
-        if {{ cookiecutter.snake_name }}_update_request.name is not None:
-            db_{{ cookiecutter.snake_name }}.username = {{ cookiecutter.snake_name }}_update_request.name
-
-        await db_{{ cookiecutter.snake_name }}.save(db)
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    db_{{ cookiecutter.snake_name }} = await service.update_by_id({{ cookiecutter.snake_name }}_id, {{ cookiecutter.snake_name }}_update_request)
+    
+    if db_{{ cookiecutter.snake_name }} is None:
+        return {{ cookiecutter.pascal_name }}UpdateResponseModel(
+            code=ErrorCode.NOT_FOUND,
+            message=ErrorMessage.get(ErrorCode.NOT_FOUND),
+        )
 
     return {{ cookiecutter.pascal_name }}UpdateResponseModel(
         data={{ cookiecutter.pascal_name }}UpdateResponse.model_validate(
@@ -238,13 +203,12 @@ async def delete_{{ cookiecutter.snake_name }}_by_id(
     {{ cookiecutter.snake_name }}_id: int = Path(..., description="{{ cookiecutter.snake_name }} id", ge=1),
     db: AsyncSession = Depends(get_async_db),
 ):
-    async with db.begin():
-        db_{{ cookiecutter.snake_name }}: {{ cookiecutter.pascal_name }} | None = await {{ cookiecutter.pascal_name }}.get_by(db, id={{ cookiecutter.snake_name }}_id)
-        if db_{{ cookiecutter.snake_name }} is None:
-            return {{ cookiecutter.pascal_name }}DeleteResponseModel(
-                code=ErrorCode.NOT_FOUND,
-                message=ErrorMessage.get(ErrorCode.NOT_FOUND),
-            ).to_json(status_code=HTTP_404_NOT_FOUND)
-        await db_{{ cookiecutter.snake_name }}.remove(db)
+    service = {{ cookiecutter.pascal_name }}Service(db)
+    db_{{ cookiecutter.snake_name }} = await service.delete_by_id({{ cookiecutter.snake_name }}_id)
+    if db_{{ cookiecutter.snake_name }} is None:
+        return {{ cookiecutter.pascal_name }}DeleteResponseModel(
+            code=ErrorCode.NOT_FOUND,
+            message=ErrorMessage.get(ErrorCode.NOT_FOUND),
+        ).to_json(status_code=HTTP_404_NOT_FOUND)
 
     return {{ cookiecutter.pascal_name }}DeleteResponseModel(data={{ cookiecutter.pascal_name }}DeleteResponse(id=db_{{ cookiecutter.snake_name }}.id))
