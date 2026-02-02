@@ -222,4 +222,5 @@ def main(
         is_eager=True,
         help="Show the FastAPI-Builder version information.",
     ),
-): ...
+):
+    ...

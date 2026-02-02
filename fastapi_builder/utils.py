@@ -10,6 +10,7 @@ from configparser import ConfigParser
 import pymysql
 import questionary
 import typer
+
 from fastapi_builder.constants import Database
 
 
@@ -52,25 +53,28 @@ def check_env():
                     typer.secho("module not exist!", fg=typer.colors.RED)
         fp.close()
     else:
-         typer.secho("requirements.txt not found", fg=typer.colors.YELLOW)
+        typer.secho("requirements.txt not found", fg=typer.colors.YELLOW)
     typer.echo()
 
     # 数据库检查
     typer.secho("[db]", fg=typer.colors.MAGENTA, bold=True)
-    
+
     sys.path.append(os.path.join(".", "core"))
     try:
         config_module = __import__("config")
         db_url = config_module.DATABASE_URL
         # Try to infer database type from settings or config
-        # Since config.py doesn't have the type directly, we might need to guess or look at fastap-builder.ini if available
+        # Since config.py doesn't have the type directly, we might need to guess
+        # or look at fastap-builder.ini if available
         # But check_env is standalone?
         # Let's try to read fastapi-builder.ini to know the DB type
         conf = read_conf("fastapi-builder.ini")
         database_type = conf.get("config", "database", fallback=Database.MYSQL)
 
     except Exception:
-        typer.secho("module databases not installed or config error", fg=typer.colors.RED)
+        typer.secho(
+            "module databases not installed or config error", fg=typer.colors.RED
+        )
         return
 
     if database_type == Database.MYSQL:
@@ -82,6 +86,7 @@ def check_env():
         typer.secho("pass", fg=typer.colors.GREEN)
         # Check file existence?
         pass
+
 
 def _check_mysql(db_url):
     typer.echo("check mysql      : ", nl=False)
@@ -102,19 +107,20 @@ def _check_mysql(db_url):
             port=db_url.port,
             user=db_url.username,
             password=db_url.password,
-            charset='utf8mb4', # Default for check
+            charset="utf8mb4",  # Default for check
         )
         typer.secho("pass", fg=typer.colors.GREEN)
     except Exception:
         typer.secho("failed", fg=typer.colors.RED)
     else:
         cursor = conn.cursor()
-        dbname = db_url.database.lstrip('/')
+        dbname = db_url.database.lstrip("/")
         typer.echo("check database   ：", nl=False)
         if cursor.execute(f"show databases like '{dbname}';"):
             typer.secho("pass", fg=typer.colors.GREEN)
         else:
             typer.secho("not exist!", fg=typer.colors.RED)
+
 
 def _check_postgres(db_url):
     typer.echo("check psql       : ", nl=False)
@@ -124,34 +130,35 @@ def _check_postgres(db_url):
         )
         typer.secho("pass", fg=typer.colors.GREEN)
     except Exception:
-        typer.secho("not exist!", fg=typer.colors.YELLOW) # psql CLI optional
+        typer.secho("not exist!", fg=typer.colors.YELLOW)  # psql CLI optional
 
     typer.echo("check connection : ", nl=False)
     try:
         import psycopg2
+
         conn = psycopg2.connect(
             host=db_url.hostname,
             port=db_url.port,
             user=db_url.username,
             password=db_url.password,
-            dbname='postgres' # Connect to default db to check existence
+            dbname="postgres",  # Connect to default db to check existence
         )
         typer.secho("pass", fg=typer.colors.GREEN)
     except Exception as e:
         typer.secho(f"failed: {e}", fg=typer.colors.RED)
         return
-    
+
     # Check if target database exists
-    dbname = db_url.database.lstrip('/')
+    dbname = db_url.database.lstrip("/")
     typer.echo(f"check database {dbname} : ", nl=False)
     conn.autocommit = True
     cur = conn.cursor()
     cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{dbname}'")
     exists = cur.fetchone()
     if exists:
-         typer.secho("pass", fg=typer.colors.GREEN)
+        typer.secho("pass", fg=typer.colors.GREEN)
     else:
-         typer.secho("not exist!", fg=typer.colors.RED)
+        typer.secho("not exist!", fg=typer.colors.RED)
     cur.close()
     conn.close()
 
@@ -196,23 +203,24 @@ def config_app(conf: ConfigParser) -> None:
     typer.echo("")
 
     sys.path.append(os.path.join(".", "core"))
-    
+
     # Try import config, might fail if .env not set up, but we need structure
     # Actually we get params from config object usually or interactive
-    
+
     database = conf.get("config", "database", fallback=Database.MYSQL)
-    
+
     if database == Database.MYSQL:
         _config_mysql(conf)
     elif database == Database.POSTGRESQL:
         _config_postgres(conf)
     elif database == Database.SQLITE:
         _config_sqlite(conf)
-    
+
     # 5）创建数据库并运行迁移文件，创建相应的表
     typer.echo("Running migrations...")
     os.system('alembic revision --autogenerate -m "create migration"')
     os.system("alembic upgrade head")
+
 
 def _config_mysql(conf):
     try:
@@ -222,16 +230,16 @@ def _config_mysql(conf):
     except Exception:
         typer.secho("Please make sure you download mysql already!", fg=typer.colors.RED)
         return
-    
+
     db_url = __import__("config").DATABASE_URL
     db_charset = __import__("config").DB_CHARSET
-    
+
     db_host: str = db_url.hostname or "localhost"
     db_port: int = db_url.port or 3306
     db_user: str = db_url.username or "root"
     db_pswd: str = db_url.password or ""
     dbname = db_url.database
-    
+
     while True:
         typer.echo("check database connecting.....", nl=False)
         try:
@@ -243,21 +251,24 @@ def _config_mysql(conf):
                 charset=db_charset,
             )
             typer.secho("success", fg=typer.colors.GREEN)
-            
+
             # Sync URL
             sql_url = f"mysql+pymysql://{db_user}:{db_pswd}@{db_host}:{db_port}/{dbname}?charset={db_charset}"
             # Async URL
             async_sql_url = f"mysql+aiomysql://{db_user}:{db_pswd}@{db_host}:{db_port}/{dbname}?charset={db_charset}"
-            
+
             set_config_file_content("alembic.ini", "sqlalchemy.url", sql_url)
-            set_config_file_content(os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url)
-            set_config_file_content(os.path.join(".", "core", ".env"), "ASYNC_DB_CONNECTION", async_sql_url)
+            set_config_file_content(
+                os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url
+            )
+            set_config_file_content(
+                os.path.join(".", "core", ".env"), "ASYNC_DB_CONNECTION", async_sql_url
+            )
 
             # 创建数据库
             cursor = conn.cursor()
             cursor.execute(
-                f"create database if not exists {dbname} "
-                "default charset utf8mb4;"
+                f"create database if not exists {dbname} " "default charset utf8mb4;"
             )
             break
         except Exception as e:
@@ -268,6 +279,7 @@ def _config_mysql(conf):
             db_user = questionary.text("database username is:", default=db_user).ask()
             db_pswd = questionary.text("database password is:", default=db_pswd).ask()
 
+
 def _config_postgres(conf):
     # Try check psql but don't force return
     try:
@@ -275,18 +287,18 @@ def _config_postgres(conf):
             ["psql", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
         )
     except Exception:
-        pass # Optional
-        
+        pass  # Optional
+
     db_url = __import__("config").DATABASE_URL
-    
+
     db_host: str = db_url.hostname or "localhost"
     db_port: int = db_url.port or 5432
     db_user: str = db_url.username or "postgres"
     db_pswd: str = db_url.password or ""
-    dbname = db_url.database.lstrip('/')
+    dbname = db_url.database.lstrip("/")
 
     import psycopg2
-    
+
     while True:
         typer.echo("check database connecting.....", nl=False)
         try:
@@ -296,19 +308,25 @@ def _config_postgres(conf):
                 port=db_port,
                 user=db_user,
                 password=db_pswd,
-                dbname='postgres'
+                dbname="postgres",
             )
             conn.autocommit = True
             typer.secho("success", fg=typer.colors.GREEN)
-            
+
             # Sync URL
             sql_url = f"postgresql+psycopg2://{db_user}:{db_pswd}@{db_host}:{db_port}/{dbname}"
             # Async URL
-            async_sql_url = f"postgresql+asyncpg://{db_user}:{db_pswd}@{db_host}:{db_port}/{dbname}"
-            
+            async_sql_url = (
+                f"postgresql+asyncpg://{db_user}:{db_pswd}@{db_host}:{db_port}/{dbname}"
+            )
+
             set_config_file_content("alembic.ini", "sqlalchemy.url", sql_url)
-            set_config_file_content(os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url)
-            set_config_file_content(os.path.join(".", "core", ".env"), "ASYNC_DB_CONNECTION", async_sql_url)
+            set_config_file_content(
+                os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url
+            )
+            set_config_file_content(
+                os.path.join(".", "core", ".env"), "ASYNC_DB_CONNECTION", async_sql_url
+            )
 
             # 创建数据库
             cur = conn.cursor()
@@ -316,7 +334,7 @@ def _config_postgres(conf):
             if not cur.fetchone():
                 typer.echo(f"Creating database {dbname}...")
                 cur.execute(f"CREATE DATABASE {dbname}")
-            
+
             cur.close()
             conn.close()
             break
@@ -328,39 +346,43 @@ def _config_postgres(conf):
             db_user = questionary.text("database username is:", default=db_user).ask()
             db_pswd = questionary.text("database password is:", default=db_pswd).ask()
 
+
 def _config_sqlite(conf):
     db_url = __import__("config").DATABASE_URL
     # For sqlite, we usually just use the path.
     # If using absolute path or relative
     # Default URL might be sqlite:///./test.db
-    
+
     # We really just need to ensure the connection string is set correctly for async
-    
+
     # If the default in config.py is sqlite:///./db.sqlite3
     # We want async to be sqlite+aiosqlite:///./db.sqlite3
-    
+
     # Let's extract the path from existing URL or just ask?
     # Usually for sqlite we don't ask user for host/port.
-    
+
     dbname = db_url.database
     if not dbname:
-         dbname = "db.sqlite3"
-         
+        dbname = "db.sqlite3"
+
     # Handle relative paths properly
-    # If it is sqlite:///./db.sqlite3, database is "db.sqlite3" (if parsed correctly by DatabaseURL)
+    # If it is sqlite:///./db.sqlite3, database is "db.sqlite3"
+    # (if parsed correctly by DatabaseURL)
     # Actually DatabaseURL parsing for sqlite is tricky.
-    
+
     # Let's just use what's there or default
-    
+
     # Sync URL
     sql_url = f"sqlite:///./{dbname}"
     # Async URL
     async_sql_url = f"sqlite+aiosqlite:///./{dbname}"
-    
+
     set_config_file_content("alembic.ini", "sqlalchemy.url", sql_url)
     set_config_file_content(os.path.join(".", "core", ".env"), "DB_CONNECTION", sql_url)
-    set_config_file_content(os.path.join(".", "core", ".env"), "ASYNC_DB_CONNECTION", async_sql_url)
-    
+    set_config_file_content(
+        os.path.join(".", "core", ".env"), "ASYNC_DB_CONNECTION", async_sql_url
+    )
+
     typer.echo(f"Configured SQLite: {dbname}")
 
 
@@ -380,7 +402,10 @@ def new_app_inject_into_project(
     import_line = (
         f"from apps.app_{folder_name}.api import router as {folder_name}_router"
     )
-    include_router_line = f'router.include_router({folder_name}_router, tags=["{pascal_name} 类"], prefix="/{snake_name}s")'  # noqa
+    include_router_line = (
+        f"router.include_router({folder_name}_router, "
+        f'tags=["{pascal_name} 类"], prefix="/{snake_name}s")'
+    )
 
     def get_new_content(
         pattern: str | re.Pattern[str], content: str, new_line: str

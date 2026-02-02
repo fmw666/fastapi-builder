@@ -11,27 +11,24 @@ def test_service_generation(tmp_path):
     """
     # Create a dummy AppContext
     app_name = "test_service_app"
-    context = AppContext(
-        name=app_name,
-        language=Language.EN
-    )
-    
+    context = AppContext(name=app_name, language=Language.EN)
+
     # Define output directory
     output_dir = str(tmp_path)
-    
+
     # Run the generator
     generate_app(context, output_dir)
-    
+
     # Expected path for service.py
     # Based on generator.py:
     # filepath = os.path.join(output_dir, f"app_{context.folder_name}")
     app_dir = os.path.join(output_dir, f"app_{context.folder_name}")
-    service_file = os.path.join(app_dir, "service.py") 
-    
+    service_file = os.path.join(app_dir, "service.py")
+
     # Verify the file exists
     assert os.path.exists(service_file), f"service.py was not created at {service_file}"
-    
-    # Optional: Verify it's not empty or contains expected content if needed, 
+
+    # Optional: Verify it's not empty or contains expected content if needed,
     # but existence is the primary goal here.
     with open(service_file) as f:
         content = f.read()
