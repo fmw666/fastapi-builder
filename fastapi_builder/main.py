@@ -33,7 +33,8 @@ from fastapi_builder.utils import (
 )
 
 # 强制设置标准输出为 UTF-8 编码
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+if not os.getenv("PYTEST_CURRENT_TEST"):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
 app = typer.Typer(
