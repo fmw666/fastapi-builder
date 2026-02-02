@@ -151,7 +151,7 @@ def run(
 def db(
     cmd: DBCmd,
     migration_message: Optional[str] = typer.Option(
-        "create migration", "-m", help="migration message"
+        "create migration", "--message", "-m", help="migration message"
     ),
 ):
     # 命令必须运行在 project 项目下
@@ -215,11 +215,12 @@ def version_callback(value: bool):
 
 @app.callback()
 def main(
-    version: bool = typer.Option(
+    version: Optional[bool] = typer.Option(
         None,
         "--version",
         callback=version_callback,
         is_eager=True,
+        is_flag=True,
         help="Show the FastAPI-Builder version information.",
     ),
 ):

@@ -24,6 +24,7 @@ __pycache__/
 
 # tmp file
 tmp*
+test/
 
 # Distribution / packaging
 .Python

@@ -20,9 +20,11 @@ class CommaSeparatedStrings(CommaSeparatedStrings):
 class ConfigParser(Config):
     """重载 Config _read_file 方法，使其支持文件中文问题"""
 
-    def _read_file(self, file_name: Union[str, Path]) -> Dict[str, str]:
+    def _read_file(
+        self, file_name: Union[str, Path], encoding: str = "utf-8"
+    ) -> Dict[str, str]:
         file_values: Dict[str, str] = {}
-        with open(file_name, encoding="utf-8") as input_file:
+        with open(file_name, encoding=encoding) as input_file:
             for line in input_file.readlines():
                 line = line.strip()
                 if "=" in line and not line.startswith("#"):

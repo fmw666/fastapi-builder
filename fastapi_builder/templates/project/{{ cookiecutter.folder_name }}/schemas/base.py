@@ -8,18 +8,18 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, PlainSerializer
 
 
-def convert_datetime(dt: datetime.datetime) -> str:
+def convert_datetime(dt: datetime) -> str:
     """
     转换日期格式
 
     Args:
-        dt (datetime.datetime): 日期时间对象
+        dt (datetime): 日期时间对象
 
     Returns:
         str: 日期时间字符串. eg: 2021-11-04 14:17:10
     """
     return (
-        dt.replace(tzinfo=datetime.timezone.utc)
+        dt.replace(tzinfo=timezone.utc)
         .isoformat()
         .replace("+00:00", "")
         .replace("T", " ")
