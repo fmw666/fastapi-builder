@@ -1,13 +1,14 @@
+from __future__ import annotations
+import configparser
 import os
 import re
-import sys
 import subprocess
-import configparser
-import typer
+import sys
+from configparser import ConfigParser
+
 import pymysql
 import questionary
-
-from configparser import ConfigParser
+import typer
 
 
 def check_env():
@@ -183,8 +184,8 @@ def config_app(conf: ConfigParser) -> None:
             # 创建数据库
             cursor = conn.cursor()
             cursor.execute(
-                "create database if not exists %s default charset utf8mb4;"
-                % db_url.database
+                f"create database if not exists {db_url.database} "
+                "default charset utf8mb4;"
             )
             break
         except Exception:
@@ -196,7 +197,7 @@ def config_app(conf: ConfigParser) -> None:
             db_pswd = questionary.text("database password is:", default=db_pswd).ask()
 
     # 5）创建数据库并运行迁移文件，创建相应的表
-    os.system("alembic revision --autogenerate -m \"create migration\"")
+    os.system('alembic revision --autogenerate -m "create migration"')
     os.system("alembic upgrade head")
 
 
@@ -213,10 +214,14 @@ def new_app_inject_into_project(
     """
 
     # 1. 打开 api/routes/api.py 文件，创建路由
-    import_line = f"from apps.app_{folder_name}.api import router as {folder_name}_router"
-    include_router_line = f"router.include_router({folder_name}_router, tags=[\"{pascal_name} 类\"], prefix=\"/{snake_name}s\")"  # noqa
+    import_line = (
+        f"from apps.app_{folder_name}.api import router as {folder_name}_router"
+    )
+    include_router_line = f'router.include_router({folder_name}_router, tags=["{pascal_name} 类"], prefix="/{snake_name}s")'  # noqa
 
-    def get_new_content(pattern: str | re.Pattern[str], content: str, new_line: str) -> str:
+    def get_new_content(
+        pattern: str | re.Pattern[str], content: str, new_line: str
+    ) -> str:
         last_match = re.findall(pattern, content)
         if last_match:
             last_position = content.rfind(last_match[-1]) + len(last_match[-1])
@@ -232,7 +237,9 @@ def new_app_inject_into_project(
         # 找到最后一个 from ... import ...
         content = get_new_content(r"from \S+ import \S+ as \S+", content, import_line)
         # 找到最后一个 router.include_router(...)
-        content = get_new_content(r"router.include_router\([^)]*\)", content, include_router_line)
+        content = get_new_content(
+            r"router.include_router\([^)]*\)", content, include_router_line
+        )
 
         f.seek(0)
         f.write(content)
@@ -246,28 +253,33 @@ def new_app_inject_into_project(
         # 找到最后一个 from ... import ... 语句
         last_import_match = re.findall(r"from \S+ import \S+", content)
         if last_import_match:
-            last_import_position = content.rfind(last_import_match[-1]) + len(last_import_match[-1])
+            last_import_position = content.rfind(last_import_match[-1]) + len(
+                last_import_match[-1]
+            )
         else:
             last_import_position = 0
 
         # 构建新的内容，添加新的导入语句
         content = (
-            content[:last_import_position] +
-            "\n" + f"from apps.app_{snake_name}.model import {pascal_name}" +
-            content[last_import_position:]
+            content[:last_import_position]
+            + "\n"
+            + f"from apps.app_{snake_name}.model import {pascal_name}"
+            + content[last_import_position:]
         )
 
         # 找到 __all__ 赋值语句
         all_match = re.search(r"__all__ = \[(.*?)\]", content)
         if all_match:
             all_entries = re.findall(r"\"(\w+)\"|\'(\w+)\'", all_match.group(1))
-            all_entries = [entry[0] if entry[0] else entry[1] for entry in all_entries]  # 处理元组结果
+            all_entries = [
+                entry[0] if entry[0] else entry[1] for entry in all_entries
+            ]  # 处理元组结果
             all_entries.append(pascal_name)
-            updated_all = ", ".join(f"\"{entry}\"" for entry in all_entries)
+            updated_all = ", ".join(f'"{entry}"' for entry in all_entries)
             content = (
-                content[:all_match.start()] +
-                f"__all__ = [{updated_all}]" +
-                content[all_match.end():]
+                content[: all_match.start()]
+                + f"__all__ = [{updated_all}]"
+                + content[all_match.end() :]
             )
 
         f.seek(0)

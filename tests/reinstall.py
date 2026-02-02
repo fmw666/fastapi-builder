@@ -3,7 +3,6 @@
 
 import os
 
-
 if __name__ == "__main__":
     # 卸载
     os.system("pip uninstall fastapi-builder")

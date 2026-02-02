@@ -1,10 +1,9 @@
 from pathlib import Path
 
 from typer.testing import CliRunner
-
-from fastapi_builder.main import app
 from utils import rm_tmp_dir
 
+from fastapi_builder.main import app
 
 runner = CliRunner()
 
