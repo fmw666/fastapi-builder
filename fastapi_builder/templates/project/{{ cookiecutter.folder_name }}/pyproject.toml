@@ -12,14 +12,23 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^{{ cookiecutter.python }}"
 fastapi = "{{ cookiecutter.fastapi }}"
+{% if cookiecutter.database == 'MySQL' -%}
 aiomysql = "^0.2.0"
+pymysql = "^1.1.1"
+{% endif -%}
+{% if cookiecutter.database == 'PostgreSQL' -%}
+asyncpg = "^0.29.0"
+psycopg2-binary = "^2.9.9"
+{% endif -%}
+{% if cookiecutter.database == 'SQLite' -%}
+aiosqlite = "^0.19.0"
+{% endif -%}
 alembic = "^1.13.2"
 bcrypt = "^4.2.0"
 databases = "^0.9.0"
 email-validator = "^2.2.0"
 loguru = "^0.7.2"
 passlib = "^1.7.4"
-pymysql = "^1.1.1"
 python-jose = "^3.3.0"
 python-multipart = "^0.0.9"
 redis = "^5.0.8"

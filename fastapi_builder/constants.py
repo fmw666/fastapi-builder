@@ -41,8 +41,9 @@ class License(BaseEnum):
 
 
 class Database(BaseEnum):
-    # POSTGRES = "Postgres"
+    POSTGRESQL = "PostgreSQL"
     MYSQL = "MySQL"
+    SQLITE = "SQLite"
 
 
 class DBCmd(BaseEnum):

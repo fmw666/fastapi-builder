@@ -60,7 +60,7 @@
 
 + [ ] 提供英文文档版本
 
-+ [ ] 提供 PostgreSQL、SQLite 数据库支持
++ [x] 提供 PostgreSQL、SQLite 数据库支持
 
 + [x] 提供完整的 run 方法
 
