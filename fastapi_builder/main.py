@@ -184,6 +184,7 @@ def venv(
         platform_cmd = {
             "Windows": f".\\{filename}\\Scripts\\{cmd}",
             "Linux": f"source ./{filename}/bin/{cmd}",
+            "Darwin": f"source ./{filename}/bin/{cmd}",
         }
         return os.system(platform_cmd[platform.system()]) == 0
 
